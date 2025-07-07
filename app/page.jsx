@@ -11,10 +11,11 @@ import {
     Grid,
     Typography,
     useMediaQuery,
-    useTheme
+    useTheme,
 } from "@mui/material";
 import Header from '../components/Header';
 import FretboardDiagram from '../components/Fretboard';
+import NotesIntervalsToggle from '../components/NotesIntervalsToggle';
 import {
     generateFretboardMap,
     generateAllVoicingsForShape,
@@ -32,13 +33,6 @@ const allChordShapes = {
 };
 const TUNING = ['E', 'B', 'G', 'D', 'A', 'E'];
 const NUM_FRETS = 24;
-
-// This helper function checks if we are at the final level (the one with the patterns)
-const isPatternLevel = obj => {
-    if (!obj || typeof obj !== 'object') return false;
-    const firstValue = Object.values(obj)[0];
-    return firstValue && typeof firstValue === 'object' && firstValue.hasOwnProperty('pattern');
-};
 
 export default function Home() {
 
@@ -71,6 +65,9 @@ export default function Home() {
 
     // State for chord shuffler
     const [shuffleChecked, setShuffleChecked] = React.useState(false);
+
+    // State for interval, or note, view
+    const [showIntervals, setShowIntervals] = React.useState(false);
 
     // Generate the fretboard map once
     const fretboardMap = React.useMemo(() => 
@@ -394,6 +391,7 @@ export default function Home() {
                                 chordShape={displayShape}
                                 rootNote={currentRootNote}
                                 fretboardMap={fretboardMap}
+                                showIntervals={showIntervals}
                             />
                         </Grid>
 
@@ -624,6 +622,7 @@ export default function Home() {
                                 New Chord
                             </Button>
                         </Grid>
+                        {/* Shuffle toggle */}
                         <FormControlLabel
                             checked={shuffleChecked}
                             control={
@@ -638,6 +637,11 @@ export default function Home() {
                             }
                             label='Shuffle'
                             onChange={e => setShuffleChecked(e.target.checked)}
+                        />
+                        {/* View toggle */}
+                        <NotesIntervalsToggle
+                            showIntervals={showIntervals}
+                            onToggle={setShowIntervals}
                         />
                     </Grid>
                 </Container>

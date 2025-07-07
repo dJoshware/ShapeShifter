@@ -1,10 +1,14 @@
-// components/FretboardDiagram.jsx
+import { NOTES } from "../lib/fretboardMap";
+
+const INTERVAL_NAMES = [
+    'R', 'b2', '2', 'b3', '3', '4', 'b5', '5', 'b6', '6', 'b7', '7'
+];
 
 const FretboardDiagram = ({
     chordShape,
-    // tuning,
     rootNote,
     fretboardMap,
+    showIntervals = false,
     numFrets = 24,
     numStrings = 6,
 }) => {
@@ -97,32 +101,61 @@ const FretboardDiagram = ({
                 const note = fretboardMap[pos.string][pos.fret];
                 // 2. Check if it matches the rootNote prop
                 const isRoot = note === rootNote;
-                // console.log(`Comparing: Note-from-map is '${note}', rootNote-prop is '${rootNote}', Match: ${isRoot}`);
+
+                // Compute interval number (0-11) between note and root
+                const rootIdx = NOTES.indexOf(rootNote);
+                const noteIdx = NOTES.indexOf(note);
+                const semitones = (noteIdx - rootIdx + 12) % 12;
+                const interval = INTERVAL_NAMES[semitones];
 
                 // For open strings (fret 0), place dot to the left of the nut
                 if (pos.fret === 0) {
                     return (
-                        <circle
-                            key={`note-${index}`}
-                            cx={15} // Position left of the nut
-                            cy={pos.string * stringSpacing + 25}
-                            r={8}
-                            fill='transparent'
-                            stroke={isRoot ? 'red' : '#39434b'}
-                            strokeWidth='2'
-                        />
+                        <g key={`note-${index}`}>
+                            <circle
+                                cx={15} // Position left of the nut
+                                cy={pos.string * stringSpacing + 25}
+                                r={8}
+                                fill='transparent'
+                                stroke={isRoot ? 'red' : '#39434b'}
+                                strokeWidth='2'
+                            />
+                            <text
+                                x={15}
+                                y={pos.string * stringSpacing + 25}
+                                textAnchor='middle'
+                                dominantBaseline='central'
+                                fontSize={14}
+                                fill={isRoot ? 'red' : '#39434b'}
+                            >
+                                {showIntervals ? interval : note}
+                            </text>
+                        </g>
                     );
                 }
 
                 // For fretted notes
+                const cx = (pos.fret -1) * fretWidth + 25 + fretWidth / 2;
+                const cy = pos.string * stringSpacing + 25;
                 return (
-                    <circle
-                        key={`note-${index}`}
-                        cx={(pos.fret - 1) * fretWidth + 25 + fretWidth / 2}
-                        cy={pos.string * stringSpacing + 25}
-                        r={10}
-                        fill={isRoot ? 'red' : '#39434b'}
-                    />
+                    <g key={`note-${index}`}>
+                        <circle
+                            cx={cx} // Position left of the nut
+                            cy={cy}
+                            r={10}
+                            fill={isRoot ? 'red' : '#39434b'}
+                        />
+                        <text
+                            x={cx}
+                            y={cy}
+                            textAnchor='middle'
+                            dominantBaseline='central'
+                            fontSize={14}
+                            fill='#fff'
+                        >
+                            {showIntervals ? interval : note}
+                        </text>
+                    </g>
                 );
             })}
         </svg>
