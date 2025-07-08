@@ -319,9 +319,9 @@ export default function Home() {
         } else {
             // Prefer the one without any accidental in its literal name,
             // or else the first one
-            const rootName = candidates.find(isCleanRoot)
-                        || candidates.find(r => !r.includes('#') && !r.includes('b'))
-                        || candidates[0];
+            rootName = candidates.find(isCleanRoot)
+                    || candidates.find(r => !r.includes('#') && !r.includes('b'))
+                    || candidates[0];
         }
 
         // !spellInterval(root, pattern[0].semitones, pattern[0].degree).includes('##') &&
