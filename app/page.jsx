@@ -25,6 +25,7 @@ import {
 import { BEGINNER_CHORD_SHAPES } from '../lib/ChordShapes/Beginner';
 import { INTERMEDIATE_CHORD_SHAPES } from '../lib/ChordShapes/Intermediate';
 import { ADVANCED_CHORD_SHAPES } from '../lib/ChordShapes/Advanced';
+import { spellInterval, MAJOR_SCALE_OFFSETS } from '../lib/ChordSpelling';
 
 const allChordShapes = {
     Beginner: BEGINNER_CHORD_SHAPES,
@@ -33,6 +34,8 @@ const allChordShapes = {
 };
 const TUNING = ['E', 'B', 'G', 'D', 'A', 'E'];
 const NUM_FRETS = 24;
+const SEMIS = [...Array(12).keys()];  // [0,1,2,…11]
+const NATURALS = new Set([0,2,4,5,7,9,11]);
 
 export default function Home() {
 
@@ -222,22 +225,27 @@ export default function Home() {
     // Handler to generate new, random Root Note and Chord data
     const handleGenerateNewRoot = () => {
         // Draw new root note
-        let deck = [...noteDeck];
-        if (deck.length === 0) deck = shuffleArray([...NOTES]);
-        const nextNote = deck.pop();
-        setCurrentRootNote(nextNote);
+        let deck = noteDeck.length ? [...noteDeck] : shuffleArray(SEMIS);
+        const nextSem = deck.pop();
         setNoteDeck(deck);
+
+        // Build enharmonic candidates from NOTES array
+        const candidates = NOTES[nextSem];
 
         // If shuffle is OFF, reset Position pill and stop
         if (!shuffleChecked) {
-            // setSelectedPosition('All');
+            const simple = candidates.find(r =>
+                !r.includes('#') && !r.includes('b'))
+                || candidates[1]
+                || candidates[0];
+            setCurrentRootNote(simple);
             return;
         }
 
         // Helper to detect Positions level
-        const isPatternLevel = lvl =>
-            lvl?.options &&
-            Object.values(lvl.options)[0]?.pattern != null;
+        // const isPatternLevel = lvl =>
+        //     lvl?.options &&
+        //     Object.values(lvl.options)[0]?.pattern != null;
 
         // Prepare blank slate
         const newSelections = {
@@ -250,7 +258,7 @@ export default function Home() {
 
         // Walk exact same hierarchy that navigator uses
         let cursor = allChordShapes[difficulty]?.[selectedCategory];
-        while (cursor && !isPatternLevel(cursor)) {
+        while (cursor && !(cursor.options && cursor.levelName === 'Positions')) {
             const { levelName, options } = cursor;
             const keys = Object.keys(options);
             const pick = keys[Math.floor(Math.random() * keys.length)];
@@ -264,23 +272,63 @@ export default function Home() {
             cursor = options[pick];
         }
 
-        // Now cursor is pattern-level object; pick random position and altShape
-        if (isPatternLevel(cursor)) {
-            // Pick random position key
-            const posKeys = Object.keys(cursor.options);
-            const pickPos = posKeys[Math.floor(Math.random() * posKeys.length)];
-            newSelections.position = pickPos;
+        // Randomize position & altShape from new cursor
+        const posKeys = Object.keys(cursor.options);
+        newSelections.position = posKeys[Math.floor(Math.random() * posKeys.length)];
+        const pd = cursor.options[newSelections.position];
+        newSelections.altShape =
+            Array.isArray(pd.altShapes) && pd.altShapes.length
+            ? Math.floor(Math.random() * pd.altShapes.length)
+            : 0;
+        
+        // Pull the exact `pattern` you’ll render
+        const positionData = cursor.options[newSelections.position];
+        const formula = Array.isArray(positionData.altShapes)
+            ? positionData.altShapes[newSelections.altShape]
+            : positionData;
 
-            // Pick random altShape
-            const formula = cursor.options[pickPos];
-            if (Array.isArray(formula.altShapes) && formula.altShapes.length > 0) {
-                newSelections.altShape = Math.floor(Math.random() * formula.altShapes.length);
-            } else {
-                newSelections.altShape = 0;
-            }
+        // Pull pattern that we need to draw
+        const pattern = formula.pattern;
+
+        // Helper to test if root note candidate is clean
+        function isCleanRoot(root) {
+            // Exclude B# and E#
+            if (root === 'B#' || root === 'E#') return false;
+            // Run spelling algorithm and reject any unnatural accidentals
+            return pattern.every(({ semitones, degree }) => {
+                const label = spellInterval(root, semitones, degree);
+                if (degree !== 1 && MAJOR_SCALE_OFFSETS[degree] !== semitones) {
+                    // Must start with '#' or 'b'
+                    return /^[#b][2-7]$/.test(label);
+                } else {
+                    // Must NOT start with '#' or 'b'
+                    return !/^[#b]/.test(label);
+                }
+            });
         }
 
+        // Gather all candidates that pass test
+        const valid = candidates.filter(isCleanRoot);
+
+        // If more than one is valid (e.g. both sharps & flats work), pick one at random
+        let rootName;
+        if (valid.length > 1) {
+            rootName = valid[Math.floor(Math.random() * valid.length)];
+        } else if (valid.length === 1) {
+            rootName = valid[0];
+        } else {
+            // Prefer the one without any accidental in its literal name,
+            // or else the first one
+            const rootName = candidates.find(isCleanRoot)
+                        || candidates.find(r => !r.includes('#') && !r.includes('b'))
+                        || candidates[0];
+        }
+
+        // !spellInterval(root, pattern[0].semitones, pattern[0].degree).includes('##') &&
+        // !spellInterval(root, pattern[0].semitones, pattern[0].degree).includes('bb')
+
         // Commit all selections at once
+        setCurrentRootNote(rootName);
         setSelectedVoicingType(newSelections.voicingType);
         setSelectedStringSet(newSelections.stringSet);
         setSelectedChordQuality(newSelections.quality);

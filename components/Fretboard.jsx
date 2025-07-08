@@ -1,8 +1,4 @@
-import { NOTES } from "../lib/fretboardMap";
-
-const INTERVAL_NAMES = [
-    'R', 'b2', '2', 'b3', '3', '4', 'b5', '5', 'b6', '6', 'b7', '7'
-];
+import { spellInterval, spellNote } from "../lib/ChordSpelling";
 
 const FretboardDiagram = ({
     chordShape,
@@ -89,46 +85,40 @@ const FretboardDiagram = ({
 
             {/* Draw Chord/Scale Notes (circles) */}
             {chordShape.map((pos, index) => {
-                if (
-                    pos.fret < 0 ||
-                    pos.fret === null ||
-                    pos.fret > numFrets ||
-                    !fretboardMap
-                ) return null; // Don't draw notes outside the fret range
+                if (pos.fret === null || pos.fret < 0 || pos.fret > numFrets) {
+                    // Don't draw notes outside fret range
+                    return null;
+                } 
 
-                // Determine if the current note is the root
-                // 1. Find the note name for this specific position using the map
-                const note = fretboardMap[pos.string][pos.fret];
-                // 2. Check if it matches the rootNote prop
-                const isRoot = note === rootNote;
+                // Spell chord
+                const { string, fret, semitones, degree } = pos;
+                const isRoot = semitones === 0;
+                const label = showIntervals
+                    ? spellInterval(rootNote, semitones, degree)
+                    : spellNote(rootNote, semitones);
 
-                // Compute interval number (0-11) between note and root
-                const rootIdx = NOTES.indexOf(rootNote);
-                const noteIdx = NOTES.indexOf(note);
-                const semitones = (noteIdx - rootIdx + 12) % 12;
-                const interval = INTERVAL_NAMES[semitones];
-
-                // For open strings (fret 0), place dot to the left of the nut
+                // For open strings (fret 0), place dot to left of nut
                 if (pos.fret === 0) {
                     return (
                         <g key={`note-${index}`}>
                             <circle
-                                cx={15} // Position left of the nut
+                                cx={12} // Position left of nut
                                 cy={pos.string * stringSpacing + 25}
-                                r={8}
+                                r={10}
                                 fill='transparent'
                                 stroke={isRoot ? 'red' : '#39434b'}
                                 strokeWidth='2'
                             />
                             <text
-                                x={15}
+                                x={12}
                                 y={pos.string * stringSpacing + 25}
                                 textAnchor='middle'
                                 dominantBaseline='central'
-                                fontSize={14}
+                                fontSize={12}
+                                fontWeight={600}
                                 fill={isRoot ? 'red' : '#39434b'}
                             >
-                                {showIntervals ? interval : note}
+                                {label}
                             </text>
                         </g>
                     );
@@ -140,9 +130,9 @@ const FretboardDiagram = ({
                 return (
                     <g key={`note-${index}`}>
                         <circle
-                            cx={cx} // Position left of the nut
+                            cx={cx} // Position left of nut
                             cy={cy}
-                            r={10}
+                            r={12}
                             fill={isRoot ? 'red' : '#39434b'}
                         />
                         <text
@@ -150,10 +140,11 @@ const FretboardDiagram = ({
                             y={cy}
                             textAnchor='middle'
                             dominantBaseline='central'
-                            fontSize={14}
+                            fontSize={12}
+                            fontWeight={600}
                             fill='#fff'
                         >
-                            {showIntervals ? interval : note}
+                            {label}
                         </text>
                     </g>
                 );
