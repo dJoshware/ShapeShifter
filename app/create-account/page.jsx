@@ -169,28 +169,29 @@ export default function LoginPage() {
     // but as a fallback or during fast transitions:
     if (user) {
         return (
-        <Box
-            sx={theme => ({
-                alignItems: 'center',
-                bgcolor: theme.palette.sand.one,
-                display: 'flex',
-                height: '100vh',
-                justifyContent: 'center',
-            })}>
-            <Typography
+            <Box
                 sx={theme => ({
-                    color: theme.palette.main.dark_blue,
-                    fontSize: 36,
-                    fontWeight: 600,
+                    alignItems: 'center',
+                    bgcolor: theme.palette.sand.one,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    height: '100vh',
+                    justifyContent: 'center',
                 })}>
-                Loading Shape Shifter...
-            </Typography>
-            <CircularProgress sx={theme => ({
-                color: theme.palette.main.dark_blue,
-            })}/>
-        </Box>
-    );
-}
+                <Typography
+                    sx={theme => ({
+                        color: theme.palette.main.dark_blue,
+                        fontSize: 36,
+                        fontWeight: 600,
+                    })}>
+                    Loading Shape Shifter...
+                </Typography>
+                <CircularProgress sx={theme => ({
+                    color: theme.palette.main.dark_blue,
+                })}/>
+            </Box>
+        );
+    }
 
     return (
         <Box
