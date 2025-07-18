@@ -13,6 +13,9 @@ import {
     useMediaQuery,
     useTheme,
 } from "@mui/material";
+import ShuffleIcon from '@mui/icons-material/Shuffle';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import Header from '../components/Header';
 import FretboardDiagram from '../components/Fretboard';
 import NotesIntervalsToggle from '../components/NotesIntervalsToggle';
@@ -35,7 +38,6 @@ const allChordShapes = {
 const TUNING = ['E', 'B', 'G', 'D', 'A', 'E'];
 const NUM_FRETS = 24;
 const SEMIS = [...Array(12).keys()];  // [0,1,2,…11]
-const NATURALS = new Set([0,2,4,5,7,9,11]);
 
 export default function Home() {
 
@@ -242,11 +244,6 @@ export default function Home() {
             return;
         }
 
-        // Helper to detect Positions level
-        // const isPatternLevel = lvl =>
-        //     lvl?.options &&
-        //     Object.values(lvl.options)[0]?.pattern != null;
-
         // Prepare blank slate
         const newSelections = {
             voicingType: '',
@@ -323,9 +320,6 @@ export default function Home() {
                     || candidates.find(r => !r.includes('#') && !r.includes('b'))
                     || candidates[0];
         }
-
-        // !spellInterval(root, pattern[0].semitones, pattern[0].degree).includes('##') &&
-        // !spellInterval(root, pattern[0].semitones, pattern[0].degree).includes('bb')
 
         // Commit all selections at once
         setCurrentRootNote(rootName);
