@@ -1,18 +1,20 @@
-"use client";
+import ThemeRegistry from "../components/ThemeRegistry";
+import { AuthProvider } from "../lib/contexts/AuthContext";
 
-import { ThemeProvider, CssBaseline } from "@mui/material";
-import Header from '../components/Header';
-import theme from "../lib/theme";
+export const metadata = {
+    title: "Shape Shifter",
+    description: "Everything you could ever learn about chords and scales.",
+};
 
-export default function ThemeRegistry({ children }) {
+export default function RootLayout({ children }) {
     return (
-        <html lang="en">
+        <html lang='en'>
             <body>
-                <ThemeProvider theme={theme}>
-                    <CssBaseline />
-                    {/* <Header /> */}
-                    {children}
-                </ThemeProvider>
+                <AuthProvider>
+                    <ThemeRegistry>
+                        {children}
+                    </ThemeRegistry>
+                </AuthProvider>
             </body>
         </html>
     );
