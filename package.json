@@ -1,5 +1,5 @@
 {
-  "name": "chord-generator",
+  "name": "shape-shifter",
   "version": "1.0.0",
   "description": "An app that can generate random chords from triads to complex, extended jazz chords",
   "main": "index.js",
@@ -10,15 +10,22 @@
     "lint": "next lint"
   },
   "author": "dJoshware",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
+    "@emotion/cache": "^11.14.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@fontsource/montserrat": "^5.2.6",
+    "@mui/icons-material": "^7.2.0",
     "@mui/material": "^7.1.2",
+    "@supabase/auth-helpers-nextjs": "^0.10.0",
+    "@supabase/auth-helpers-react": "^0.5.0",
+    "@supabase/ssr": "^0.6.1",
+    "@supabase/supabase-js": "^2.50.3",
     "next": "^15.3.4",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "stripe": "^18.3.0",
     "styled-components": "^6.1.19"
   }
 }
