@@ -24,7 +24,7 @@ import { useAuth } from "../../lib/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import FormFields from "../../components/FormFields";
 
-export default function LoginPage() {
+export default function SignUpPage() {
 
     const theme = useTheme();
     const router = useRouter();
