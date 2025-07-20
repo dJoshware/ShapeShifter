@@ -3,6 +3,7 @@
 import * as React from 'react';
 import {
     alpha,
+    Alert,
     AppBar,
     Avatar,
     Box,
@@ -39,6 +40,12 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../lib/contexts/AuthContext';
 import FormFields from './FormFields';
+import {
+    deleteAccount,
+    updateEmail,
+    updatePassword,
+    updateSettings
+} from '../lib/CRUD';
 
 export default function Header({ difficulty, onDifficultyChange }) {
 
@@ -53,11 +60,11 @@ export default function Header({ difficulty, onDifficultyChange }) {
     const [email, setEmail] = React.useState("");
     const [password, setPassword] = React.useState("");
     const [showPassword, setShowPassword] = React.useState(false);
-    const [formError, setFormError] = React.useState("");
     const [loading, setLoading] = React.useState(false);
+    const [anchorEl, setAnchorEl] = React.useState(null);
+    const [formError, setFormError] = React.useState("");
     const [alertMessage, setAlertMessage] = React.useState("");
     const [alertSeverity, setAlertSeverity] = React.useState("success");
-    const [anchorEl, setAnchorEl] = React.useState(null);
     // State for user settings
     const [drawerOpen, setDrawerOpen] = React.useState(false);
     // State for paywall modal
@@ -102,21 +109,59 @@ export default function Header({ difficulty, onDifficultyChange }) {
     // Menu button handlers
     const handleOpenMenu = e => setAnchorEl(e.currentTarget);
     const handleCloseMenu = () => setAnchorEl(null);
-    const handleSignin = async () => router.push('/signin');
+    const handleSignin = () => router.push('/signin');
     const handleSettingsClick = () => { handleCloseMenu(); setDrawerOpen(true); };
     const handleSignoutClick = async () => { handleCloseMenu(); await signOut(); };
     const handleDrawerSignout = async () => { handleCloseDrawer(); await signOut(); };
     const handleCloseDrawer = () => setDrawerOpen(false);
-    // Account deletion
-    const handleDeleteAccount = async () => {
-        setDeleteAccountOpen(false);
-        alert("Account deleted!");
-        router.push('/');
-    };
-
     // Password default preventers
     const handleMouseDownPassword = e => e.preventDefault();
     const handleMouseUpPassword = e => e.preventDefault();
+
+    // CRUD OPERATIONS
+
+    // Account deletion states and handlers
+    const [deleteAlertMessage, setDeleteAlertMessage] = React.useState("");
+    const [deleteAlertSeverity, setDeleteAlertSeverity] = React.useState("success");
+    const [deleteLoading, setDeleteLoading] = React.useState(false);
+    const handleDeleteAccount = async () => {
+        setDeleteLoading(true);
+        try {
+            await deleteAccount();
+            await signOut(); // Browser sign out; UX
+            setDeleteLoading(false);
+            setDeleteAlertSeverity("success");
+            setDeleteAlertMessage("Your account has been deleted!");
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            setDeleteAccountOpen(false);
+            handleCloseDrawer();
+        } catch (err) {
+            console.error('There was a problem deleting the account:', err);
+            setDeleteLoading(false);
+            setDeleteAlertSeverity("error");
+            setDeleteAlertMessage("Could not delete your account. Please try again.");
+        }
+    };
+    // Update email states and handlers
+    const [updateEmailAlertMessage, setUpdateEmailAlertMessage] = React.useState("");
+    const [updateEmailAlertSeverity, setUpdateEmailAlertSeverity] = React.useState("success");
+    const [updateEmailLoading, setUpdateEmailLoading] = React.useState(false);
+    const handleUpdateEmail = async () => {
+        setUpdateEmailLoading(true);
+        try {
+            await updateEmail();
+            setUpdateEmailLoading(false);
+            setUpdateEmailAlertSeverity("success");
+            setUpdateEmailAlertMessage("Your email has been updated!");
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            setUpdateEmailAlertMessage('');
+        } catch (err) {
+            console.error('There was a problem updating the email:', err);
+            setUpdateEmailLoading(false);
+            setUpdateEmailAlertSeverity("error");
+            setUpdateEmailAlertMessage("Could not update your email. Please try again.");
+        }
+    }
 
     // Password validator for account registration
     function isValidPassword(password) {
@@ -380,7 +425,7 @@ export default function Header({ difficulty, onDifficultyChange }) {
                                                 borderRight: '2px solid #39434b',
                                                 pr: .8,
                                             }}>
-                                            <PersonIcon color={alertMessage ? 'error' : 'action'} />
+                                            <PersonIcon color={updateEmailAlertMessage ? 'error' : 'action'} />
                                         </InputAdornment>
                                     }
                                     sx={theme => ({
@@ -403,19 +448,19 @@ export default function Header({ difficulty, onDifficultyChange }) {
                                         </Alert>
                                     )
                                 } */}
-                                {alertMessage && (
+                                {updateEmailAlertMessage && (
                                     <Alert
-                                        severity={alertSeverity}
+                                        severity={updateEmailAlertSeverity}
                                         sx={{ fontWeight: 700, mb: 3 }}
                                         variant='filled'>
-                                            {alertMessage}
+                                            {updateEmailAlertMessage}
                                     </Alert>
                                 )}
                                 <Button
-                                    loading={loading}
+                                    loading={updateEmailLoading}
                                     loadingPosition="center"
-                                    disabled={authIsLoading}
-                                    // onClick={handleChangeEmail}
+                                    disabled={updateEmailLoading}
+                                    onClick={handleUpdateEmail}
                                     sx={theme => ({
                                         alignSelf: 'flex-end',
                                         bgcolor: theme.palette.main.dark_blue,
@@ -662,6 +707,8 @@ export default function Header({ difficulty, onDifficultyChange }) {
 
             {/* Delete account modal */}
             <Dialog
+                fullWidth
+                maxWidth='sm'
                 open={deleteAccountOpen}
                 onClose={() => setDeleteAccountOpen(false)}>
                 <DialogTitle
@@ -683,25 +730,43 @@ export default function Header({ difficulty, onDifficultyChange }) {
                         bgcolor: theme.palette.sand.one,
                     })}>
                     <Typography
-                        sx={theme => ({
+                        sx={{
                             mb: 1,
                             mt: 3,
-                        })}>
-                        Are you sure you want to delete your account?
+                        }}>
+                        {deleteLoading
+                            ? "You've made your choice..."
+                            : 'Are you sure you want to delete your account?'}
                     </Typography>
                     <Typography
-                        sx={theme => ({
+                        sx={{
                             mb: 1,
-                        })}>
-                        You will need to make a new one...
+                        }}>
+                        {deleteLoading
+                            ? 'Deleting now...'
+                            : 'You will need to make a new one...'}
                     </Typography>
+                    {deleteAlertMessage && (
+                        <Alert
+                            severity={deleteAlertSeverity}
+                            sx={{ fontWeight: 700 }}
+                            variant='filled'>
+                                {deleteAlertMessage}
+                        </Alert>
+                    )}
                 </DialogContent>
                 <DialogActions
                     sx={theme => ({
                         bgcolor: theme.palette.sand.one
                     })}>
                     <Button
-                        onClick={() => setDeleteAccountOpen(false)}
+                        disabled={deleteLoading}
+                        loading={deleteLoading}
+                        loadingPosition='center'
+                        onClick={() => {
+                            setDeleteAlertMessage('');
+                            setDeleteAccountOpen(false);
+                        }}
                         sx={theme => ({
                             bgcolor: theme.palette.main.dark_blue,
                             borderRadius: 6,
@@ -717,6 +782,9 @@ export default function Header({ difficulty, onDifficultyChange }) {
                         Cancel
                     </Button>
                     <Button
+                        disabled={deleteLoading}
+                        loading={deleteLoading}
+                        loadingPosition='center'
                         onClick={handleDeleteAccount}
                         sx={theme => ({
                             bgcolor: '#DC143C',
