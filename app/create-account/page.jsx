@@ -32,7 +32,6 @@ export default function SignUpPage() {
     // Media queries
     const isMobile = useMediaQuery(theme.breakpoints.down('sm')); // <600px
     const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'lg')); // 600px - 1200px
-    // const isDesktop = useMediaQuery(theme.breakpoints.up('lg')); // >1200px
     
     const [email, setEmail] = React.useState("");
     const [password, setPassword] = React.useState("");
