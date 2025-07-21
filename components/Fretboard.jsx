@@ -105,7 +105,7 @@ const FretboardDiagram = ({
                                 cy={pos.string * stringSpacing + 25}
                                 r={10}
                                 fill='transparent'
-                                stroke={isRoot ? '#DC143C' : '#39434b'}
+                                stroke={isRoot ? '#D32F2F' : '#39434b'}
                                 strokeWidth='2'
                             />
                             <text
@@ -115,7 +115,7 @@ const FretboardDiagram = ({
                                 dominantBaseline='central'
                                 fontSize={12}
                                 fontWeight={600}
-                                fill={isRoot ? '#DC143C' : '#39434b'}
+                                fill={isRoot ? '#D32F2F' : '#39434b'}
                             >
                                 {label}
                             </text>
@@ -132,7 +132,7 @@ const FretboardDiagram = ({
                             cx={cx} // Position left of nut
                             cy={cy}
                             r={12}
-                            fill={isRoot ? '#DC143C' : '#39434b'}
+                            fill={isRoot ? '#D32F2F' : '#39434b'}
                         />
                         <text
                             x={cx}
