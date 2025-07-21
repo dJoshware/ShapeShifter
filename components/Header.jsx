@@ -74,6 +74,25 @@ export default function Header({ difficulty, onDifficultyChange }) {
     // Track whether they have Pro
     const [hasPro, setHasPro] = React.useState(false);
 
+    // Password validator for account registration
+    function isValidPassword(password) {
+        const minLength = /.{8,}/;
+        const hasUpper = /[A-Z]/;
+        const hasLower = /[a-z]/;
+        const hasDigit = /[0-9]/;
+        const hasSpecial = /[!@#$%^&-_.?/]/; // Allowed specials
+        const notAllowed = /[*()+={}|,<>:;"']/; // Blocked specials
+
+        return (
+            minLength.test(password) &&
+            hasUpper.test(password) &&
+            hasLower.test(password) &&
+            hasDigit.test(password) &&
+            hasSpecial.test(password) &&
+            !notAllowed.test(password)
+        );
+    }
+
     // Handles level changes; Dialog pop up if locked level
     const handleClick = level => {
         if (lockedLevels.includes(level)) {
@@ -148,8 +167,17 @@ export default function Header({ difficulty, onDifficultyChange }) {
     const [updateEmailLoading, setUpdateEmailLoading] = React.useState(false);
     const handleUpdateEmail = async () => {
         setUpdateEmailLoading(true);
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         try {
-            await updateEmail();
+            // Basic format check
+            if (!email || !emailRegex.test(email)) {
+                throw new Error('Invalid email format');
+            }
+            // If new email is samee as current
+            if (email === user.email) {
+                throw new Error('New email must be different from current email');
+            }
+            await updateEmail(email);
             setUpdateEmailLoading(false);
             setUpdateEmailAlertSeverity("success");
             setUpdateEmailAlertMessage("Your email has been updated!");
@@ -159,28 +187,20 @@ export default function Header({ difficulty, onDifficultyChange }) {
             console.error('There was a problem updating the email:', err);
             setUpdateEmailLoading(false);
             setUpdateEmailAlertSeverity("error");
-            setUpdateEmailAlertMessage("Could not update your email. Please try again.");
+            setUpdateEmailAlertMessage(
+                err.message.includes('Invalid email format')
+                    ? 'Please enter a valid email address'
+                    : err.message.includes('different from current email')
+                        ? 'New email must be different from current email'
+                        : 'Could not update email. Please try again.'
+            );
         }
-    }
+    };
 
-    // Password validator for account registration
-    function isValidPassword(password) {
-        const minLength = /.{8,}/;
-        const hasUpper = /[A-Z]/;
-        const hasLower = /[a-z]/;
-        const hasDigit = /[0-9]/;
-        const hasSpecial = /[!@#$%^&-_.?/]/; // Allowed specials
-        const notAllowed = /[*()+={}|,<>:;"']/; // Blocked specials
-
-        return (
-            minLength.test(password) &&
-            hasUpper.test(password) &&
-            hasLower.test(password) &&
-            hasDigit.test(password) &&
-            hasSpecial.test(password) &&
-            !notAllowed.test(password)
-        );
-    }
+    // On user load/change, prefill user's email form field in settings
+    React.useEffect(() => {
+        if (user?.email) setEmail(user.email);
+    }, [user]);
 
     // Lock only if user does NOT have Pro
     const lockedLevels = hasPro ? [] : ['Advanced', 'Draw Mode'];
@@ -416,7 +436,7 @@ export default function Header({ difficulty, onDifficultyChange }) {
                                     onChange={e => {
                                         setEmail(e.target.value);
                                         setFormError('');
-                                        setAlertMessage('');
+                                        setUpdateEmailAlertMessage('');
                                     }}
                                     startAdornment={
                                         <InputAdornment
@@ -436,26 +456,8 @@ export default function Header({ difficulty, onDifficultyChange }) {
                                         px: 1,
                                     })}
                                     type='email'
-                                    value={user && user.email}
+                                    value={email}
                                 />
-                                {/* {formError &&
-                                    !formError.toLowerCase().includes("email") && !formError.toLowerCase().includes("password") && (
-                                        <Alert
-                                            severity={alertSeverity}
-                                            sx={{ fontWeight: 700, mb: 3 }}
-                                            variant='filled'>
-                                                {alertMessage}
-                                        </Alert>
-                                    )
-                                } */}
-                                {updateEmailAlertMessage && (
-                                    <Alert
-                                        severity={updateEmailAlertSeverity}
-                                        sx={{ fontWeight: 700, mb: 3 }}
-                                        variant='filled'>
-                                            {updateEmailAlertMessage}
-                                    </Alert>
-                                )}
                                 <Button
                                     loading={updateEmailLoading}
                                     loadingPosition="center"
@@ -480,6 +482,24 @@ export default function Header({ difficulty, onDifficultyChange }) {
                                     variant='contained'>
                                     Save
                                 </Button>
+                                {formError &&
+                                    !formError.toLowerCase().includes("email") && (
+                                        <Alert
+                                            severity={alertSeverity}
+                                            sx={{ fontWeight: 700, my: 1 }}
+                                            variant='filled'>
+                                                {alertMessage}
+                                        </Alert>
+                                    )
+                                }
+                                {updateEmailAlertMessage && (
+                                    <Alert
+                                        severity={updateEmailAlertSeverity}
+                                        sx={{ fontWeight: 700, my: 1 }}
+                                        variant='filled'>
+                                            {updateEmailAlertMessage}
+                                    </Alert>
+                                )}
                             </Grid>
                             {/* Change password */}
                             <Grid container>
@@ -606,7 +626,7 @@ export default function Header({ difficulty, onDifficultyChange }) {
                                 onClick={() => setDeleteAccountOpen(true)}
                                 startIcon={<DeleteIcon />}
                                 sx={theme => ({
-                                    bgcolor: '#DC143C',
+                                    bgcolor: '#D32F2F',
                                     borderRadius: 1,
                                     color: theme.palette.sand.one,
                                     fontSize: '1rem',
@@ -787,7 +807,7 @@ export default function Header({ difficulty, onDifficultyChange }) {
                         loadingPosition='center'
                         onClick={handleDeleteAccount}
                         sx={theme => ({
-                            bgcolor: '#DC143C',
+                            bgcolor: '#D32F2F',
                             borderRadius: 6,
                             color: theme.palette.sand.one,
                             fontSize:
