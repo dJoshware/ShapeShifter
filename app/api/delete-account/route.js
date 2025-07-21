@@ -1,10 +1,12 @@
 import { NextResponse } from 'next/server';
-import { createServerClient } from '../../../lib/supabaseServerClient';
+import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createClient } from '@supabase/supabase-js';
+import { cookies } from 'next/headers';
 
 export async function DELETE(req) {
     try {
         // Supabase client
-        const supabase = await createServerClient();
+        const supabase = createServerComponentClient({ cookies });
         // Extract JWT from request headers
         const authHeader = req.headers.get('authorization');
         if (!authHeader) {
@@ -14,25 +16,26 @@ export async function DELETE(req) {
             }, { status: 401 });
         }
         // Get user from Supabase using JWT
-        const { data: { user }, error: getUserError } = await supabase.auth.getUser(
-            authHeader?.replace('Bearer ', '')
-        );
-        // console.log('User object:', user);
-        // console.log('User Retrieval Error:', getUserError);
+        const token = authHeader.replace('Bearer ', '');
+        const { data: { user }, error: getUserError} = await supabase.auth.getUser(token);
         if (getUserError || !user) {
             return NextResponse.json({
                 error: 'Unauthorized',
                 details: getUserError?.message || 'No authorized user found'
             }, { status: 401 });
         }
-        
+        // Create Supabase admin client
+        const adminSupabase = createClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL,
+            process.env.SUPABASE_SERVICE_ROLE_KEY
+        );
         // Parallel deletions from multiple tables
         const deletionResults = await Promise.allSettled([
-            supabase
+            adminSupabase
                 .from('settings')
                 .delete()
                 .eq('user_id', user.id),
-            supabase
+            adminSupabase
                 .from('subscriptions')
                 .delete()
                 .eq('user_id', user.id)
@@ -46,7 +49,7 @@ export async function DELETE(req) {
             }
         });
         // Attempt to delete user
-        const { error } = await supabase.auth.admin.deleteUser(user.id);
+        const { error } = await adminSupabase.auth.admin.deleteUser(user.id);
         if (error) {
             console.log('Account deletion error:', error);
             return NextResponse.json({
