@@ -1,12 +1,11 @@
 import { NextResponse } from 'next/server';
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
-import { createClient } from '@supabase/supabase-js';
-import { cookies } from 'next/headers';
+import { createServerClient } from '../../../lib/supabaseServerClient';
+import { createClient as createAdmin } from '@supabase/supabase-js';
 
 export async function DELETE(req) {
     try {
         // Supabase client
-        const supabase = createServerComponentClient({ cookies });
+        const supabase = createServerClient();
         // Extract JWT from request headers
         const authHeader = req.headers.get('authorization');
         if (!authHeader) {
@@ -25,7 +24,7 @@ export async function DELETE(req) {
             }, { status: 401 });
         }
         // Create Supabase admin client
-        const adminSupabase = createClient(
+        const adminSupabase = createAdmin(
             process.env.NEXT_PUBLIC_SUPABASE_URL,
             process.env.SUPABASE_SERVICE_ROLE_KEY
         );
