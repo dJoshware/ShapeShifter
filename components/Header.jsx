@@ -200,7 +200,7 @@ export default function Header({ difficulty, onDifficultyChange }) {
     // On user load/change, prefill user's email form field in settings
     React.useEffect(() => {
         if (user?.email) setEmail(user.email);
-    }, [user]);
+    }, [user?.email]);
 
     // Lock only if user does NOT have Pro
     const lockedLevels = hasPro ? [] : ['Advanced', 'Draw Mode'];
@@ -445,7 +445,7 @@ export default function Header({ difficulty, onDifficultyChange }) {
                                                 borderRight: '2px solid #39434b',
                                                 pr: .8,
                                             }}>
-                                            <PersonIcon color={updateEmailAlertMessage ? 'error' : 'action'} />
+                                            <PersonIcon color={updateEmailAlertMessage === '' ? 'action' : 'error'} />
                                         </InputAdornment>
                                     }
                                     sx={theme => ({
@@ -529,7 +529,7 @@ export default function Header({ difficulty, onDifficultyChange }) {
                                                 borderRight: '2px solid #39434b',
                                                 pr: .7,
                                             }}>
-                                            <KeyIcon color={alertMessage ? 'error' : 'action'} />
+                                            <KeyIcon color={alertMessage === '' ? 'action' : 'error'} />
                                         </InputAdornment>
                                     }
                                     sx={theme => ({
@@ -542,7 +542,7 @@ export default function Header({ difficulty, onDifficultyChange }) {
                                     type={showPassword ? 'text' : 'password'}
                                     value={password}
                                 />
-                                {/* {formError &&
+                                {formError &&
                                     !formError.toLowerCase().includes("email") && !formError.toLowerCase().includes("password") && (
                                         <Alert
                                             severity={alertSeverity}
@@ -551,7 +551,7 @@ export default function Header({ difficulty, onDifficultyChange }) {
                                                 {alertMessage}
                                         </Alert>
                                     )
-                                } */}
+                                }
                                 {alertMessage && (
                                     <Alert
                                         severity={alertSeverity}
@@ -640,7 +640,7 @@ export default function Header({ difficulty, onDifficultyChange }) {
                                     }
                                 })}
                                 variant='contained'>
-                                {authIsLoading
+                                {deleteLoading
                                     ? <CircularProgress size={24} color='inherit' />
                                     : 'Delete Account'
                                 }
