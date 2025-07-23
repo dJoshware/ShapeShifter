@@ -57,9 +57,6 @@ export default function Header({ difficulty, onDifficultyChange }) {
     const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'lg')); // 600px - 1200px
 
     // State for Menu and Drawer
-    const [email, setEmail] = React.useState("");
-    const [password, setPassword] = React.useState("");
-    const [showPassword, setShowPassword] = React.useState(false);
     const [loading, setLoading] = React.useState(false);
     const [anchorEl, setAnchorEl] = React.useState(null);
     const [formError, setFormError] = React.useState("");
@@ -162,6 +159,7 @@ export default function Header({ difficulty, onDifficultyChange }) {
         }
     };
     // Update email states and handlers
+    const [email, setEmail] = React.useState("");
     const [updateEmailAlertMessage, setUpdateEmailAlertMessage] = React.useState("");
     const [updateEmailAlertSeverity, setUpdateEmailAlertSeverity] = React.useState("success");
     const [updateEmailLoading, setUpdateEmailLoading] = React.useState(false);
@@ -196,6 +194,60 @@ export default function Header({ difficulty, onDifficultyChange }) {
             );
         }
     };
+    // Update password states and handlers
+    const [password, setPassword] = React.useState('');
+    const [showPassword, setShowPassword] = React.useState(false);
+    const [confirmPassword, setConfirmPassword] = React.useState('');
+    const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
+    const [updatePasswordAlertMessage, setUpdatePasswordAlertMessage] = React.useState("");
+    const [updatePasswordAlertSeverity, setUpdatePasswordAlertSeverity] = React.useState("success");
+    const [updatePasswordLoading, setUpdatePasswordLoading] = React.useState(false);
+    const handleUpdatePassword = async () => {
+        setUpdatePasswordLoading(true);
+        try {
+            if (!password.trim()) {
+                throw new Error('Invalid password format')
+            }
+            if (!confirmPassword.trim()) {
+                throw new Error('Please confirm your password');
+            }
+            if (password === confirmPassword) {
+                throw new Error('New password must be different from current password');
+            }
+            if (password !== confirmPassword) {
+                throw new Error('Passwords do not match');
+            }
+            await updatePassword(password);
+            setUpdatePasswordLoading(false);
+            setUpdatePasswordAlertSeverity('success');
+            setUpdatePasswordAlertMessage('Your password has been updated!');
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            setUpdatePasswordAlertMessage('');
+        } catch (err) {
+            console.error('There was a problem updating your password:', err);
+            setUpdatePasswordLoading(false);
+            setUpdatePasswordAlertSeverity('error');
+            setUpdatePasswordAlertMessage(
+                err.message.includes('Invalid password format')
+                    ? 'Please enter a valid password'
+                    : err.message.includes('different from current password')
+                    ? 'New password must be different from current password'
+                    : 'Could not update password. Please try again.'
+            );
+        }
+    };
+    // Show password mismatch until match
+    React.useEffect(() => {
+        if (confirmPassword.length > 0) {
+            setUpdatePasswordAlertMessage(
+                confirmPassword === password
+                ? ''
+                : "Passwords must match."
+            );
+        } else {
+            setUpdatePasswordAlertMessage('');
+        }
+    }, [password, confirmPassword]);
 
     // On user load/change, prefill user's email form field in settings
     React.useEffect(() => {
@@ -452,36 +504,40 @@ export default function Header({ difficulty, onDifficultyChange }) {
                                         bgcolor: theme.palette.sand.four,
                                         borderRadius: 1,
                                         color: theme.palette.main.dark_blue,
+                                        mr: email === user.email ? 10.25 : 0,
                                         mt: 1,
                                         px: 1,
                                     })}
                                     type='email'
                                     value={email}
                                 />
-                                <Button
-                                    loading={updateEmailLoading}
-                                    loadingPosition="center"
-                                    disabled={updateEmailLoading}
-                                    onClick={handleUpdateEmail}
-                                    sx={theme => ({
-                                        alignSelf: 'flex-end',
-                                        bgcolor: theme.palette.main.dark_blue,
-                                        borderRadius: 6,
-                                        color: theme.palette.sand.one,
-                                        fontSize: 14,
-                                        fontWeight: 600,
-                                        height: 'fit-content',
-                                        ml: 2,
-                                        textTransform: "none",
-                                        width: 'fit-content',
-                                        '&.MuiButton-loading': {
-                                            bgcolor: theme.palette.main.white,
-                                            opacity: 0.8,
-                                        }
-                                    })}
-                                    variant='contained'>
-                                    Save
-                                </Button>
+                                {email === user.email
+                                    ? '' : (
+                                        <Button
+                                            loading={updateEmailLoading}
+                                            loadingPosition="center"
+                                            disabled={updateEmailLoading}
+                                            onClick={handleUpdateEmail}
+                                            sx={theme => ({
+                                                alignSelf: 'flex-end',
+                                                bgcolor: theme.palette.main.dark_blue,
+                                                borderRadius: 6,
+                                                color: theme.palette.sand.one,
+                                                fontSize: 14,
+                                                fontWeight: 600,
+                                                height: 'fit-content',
+                                                ml: 2,
+                                                textTransform: "none",
+                                                width: 'fit-content',
+                                                '&.MuiButton-loading': {
+                                                    bgcolor: theme.palette.main.white,
+                                                    opacity: 0.8,
+                                                }
+                                            })}
+                                            variant='contained'>
+                                            Save
+                                        </Button>
+                                    )}
                                 {formError &&
                                     !formError.toLowerCase().includes("email") && (
                                         <Alert
