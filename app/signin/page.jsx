@@ -303,7 +303,6 @@ export default function LoginPage() {
                                 <Grid
                                     container
                                     justifyContent='space-between'>
-                                    {/* spacing={1}> */}
                                     <Link
                                         href='#'
                                         sx={theme => ({
@@ -313,16 +312,16 @@ export default function LoginPage() {
                                             textDecorationColor: theme.palette.main.dark_blue,
                                             transition: 'color 200ms ease-in-out',
                                             '&::after': {
-                                                content: '""',
-                                                position: 'absolute',
-                                                left: 0,
-                                                bottom: 0,
-                                                width: '100%',
-                                                height: '2px',
                                                 bgcolor: theme.palette.main.dark_blue,
+                                                bottom: 0,
+                                                content: '""',
+                                                height: '2px',
+                                                left: 0,
+                                                position: 'absolute',
                                                 transform: 'scaleX(0)',
                                                 transformOrigin: 'center',
                                                 transition: 'transform 200ms ease-in-out',
+                                                width: '100%',
                                             },
                                             '&:hover': {
                                                 color: theme.palette.main.dark_blue,
@@ -342,16 +341,16 @@ export default function LoginPage() {
                                             textDecorationColor: theme.palette.main.dark_blue,
                                             transition: 'color 200ms ease-in-out',
                                             '&::after': {
-                                                content: '""',
-                                                position: 'absolute',
-                                                left: 0,
-                                                bottom: 0,
-                                                width: '100%',
-                                                height: '2px',
                                                 bgcolor: theme.palette.main.dark_blue,
+                                                bottom: 0,
+                                                content: '""',
+                                                height: '2px',
+                                                left: 0,
+                                                position: 'absolute',
                                                 transform: 'scaleX(0)',
                                                 transformOrigin: 'center',
                                                 transition: 'transform 200ms ease-in-out',
+                                                width: '100%',
                                             },
                                             '&:hover': {
                                                 color: theme.palette.main.dark_blue,
