@@ -57,17 +57,15 @@ export default function Header({ difficulty, onDifficultyChange }) {
     const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'lg')); // 600px - 1200px
 
     // State for Menu and Drawer
-    const [loading, setLoading] = React.useState(false);
+    const [loading, setLoading] = React.useState(false); // WON'T NEED
     const [anchorEl, setAnchorEl] = React.useState(null);
     const [formError, setFormError] = React.useState("");
-    const [alertMessage, setAlertMessage] = React.useState("");
-    const [alertSeverity, setAlertSeverity] = React.useState("success");
-    // State for user settings
+    const [alertMessage, setAlertMessage] = React.useState(""); // PROLLY WON'T NEED
+    const [alertSeverity, setAlertSeverity] = React.useState("success"); // PROLLY WON'T NEED
+    // State for user settings 
     const [drawerOpen, setDrawerOpen] = React.useState(false);
     // State for paywall modal
     const [paywallOpen, setPaywallOpen] = React.useState(false);
-    // State for delete account modal
-    const [deleteAccountOpen, setDeleteAccountOpen] = React.useState(false);
     // Track whether they have Pro
     const [hasPro, setHasPro] = React.useState(false);
 
@@ -140,6 +138,8 @@ export default function Header({ difficulty, onDifficultyChange }) {
     const [deleteAlertMessage, setDeleteAlertMessage] = React.useState("");
     const [deleteAlertSeverity, setDeleteAlertSeverity] = React.useState("success");
     const [deleteLoading, setDeleteLoading] = React.useState(false);
+    // Delete account modal
+    const [deleteAccountOpen, setDeleteAccountOpen] = React.useState(false);
     const handleDeleteAccount = async () => {
         setDeleteLoading(true);
         try {
@@ -202,6 +202,10 @@ export default function Header({ difficulty, onDifficultyChange }) {
     const [updatePasswordAlertMessage, setUpdatePasswordAlertMessage] = React.useState("");
     const [updatePasswordAlertSeverity, setUpdatePasswordAlertSeverity] = React.useState("success");
     const [updatePasswordLoading, setUpdatePasswordLoading] = React.useState(false);
+    const handleShowPassword = () => {
+        setShowPassword(s => !s);
+        setShowConfirmPassword(s => !s);
+    };
     const handleUpdatePassword = async () => {
         setUpdatePasswordLoading(true);
         try {
@@ -211,13 +215,13 @@ export default function Header({ difficulty, onDifficultyChange }) {
             if (!confirmPassword.trim()) {
                 throw new Error('Please confirm your password');
             }
-            if (password === confirmPassword) {
-                throw new Error('New password must be different from current password');
-            }
             if (password !== confirmPassword) {
                 throw new Error('Passwords do not match');
             }
-            await updatePassword(password);
+            if (!isValidPassword(confirmPassword)) {
+                throw new Error('Password must be at least 8 characters and include uppercase, lowercase, a number, and a symbol (!@#$%^&-_.?/).')
+            }
+            await updatePassword(confirmPassword);
             setUpdatePasswordLoading(false);
             setUpdatePasswordAlertSeverity('success');
             setUpdatePasswordAlertMessage('Your password has been updated!');
@@ -230,8 +234,8 @@ export default function Header({ difficulty, onDifficultyChange }) {
             setUpdatePasswordAlertMessage(
                 err.message.includes('Invalid password format')
                     ? 'Please enter a valid password'
-                    : err.message.includes('different from current password')
-                    ? 'New password must be different from current password'
+                    : err.message.includes('at least 8 characters')
+                    ? 'Password must be at least 8 characters and include uppercase, lowercase, a number, and a symbol (!@#$%^&-_.?/).'
                     : 'Could not update password. Please try again.'
             );
         }
@@ -244,6 +248,7 @@ export default function Header({ difficulty, onDifficultyChange }) {
                 ? ''
                 : "Passwords must match."
             );
+            setUpdatePasswordAlertSeverity('error');
         } else {
             setUpdatePasswordAlertMessage('');
         }
@@ -462,9 +467,11 @@ export default function Header({ difficulty, onDifficultyChange }) {
                         sx={theme => ({
                             bgcolor: theme.palette.sand.four,
                             color: theme.palette.main.dark_blue,
+                            display: 'flex',
+                            flexDirection: 'column',
                             height: '100%',
                             p: 2,
-                            width: 450,
+                            width: 500,
                         })}>
                         {/* User ID (Supabase) */}
                         <Typography
@@ -477,7 +484,9 @@ export default function Header({ difficulty, onDifficultyChange }) {
                             })}>
                             {user && `User ID: ${user.id}`}
                         </Typography>
-                        <Stack spacing={3}>
+                        <Stack
+                            height='100%'
+                            spacing={3}>
                             {/* Change email */}
                             <Grid container>
                                 <FormFields
@@ -497,47 +506,48 @@ export default function Header({ difficulty, onDifficultyChange }) {
                                                 borderRight: '2px solid #39434b',
                                                 pr: .8,
                                             }}>
-                                            <PersonIcon color={updateEmailAlertMessage === '' ? 'action' : 'error'} />
+                                            <PersonIcon color={updateEmailAlertMessage === 'error' ? 'error' : 'action'} />
                                         </InputAdornment>
                                     }
                                     sx={theme => ({
                                         bgcolor: theme.palette.sand.four,
                                         borderRadius: 1,
                                         color: theme.palette.main.dark_blue,
-                                        mr: email === user.email ? 10.25 : 0,
+                                        // mr: email === user.email ? 10.25 : 0,
                                         mt: 1,
                                         px: 1,
                                     })}
                                     type='email'
                                     value={email}
                                 />
-                                {email === user.email
-                                    ? '' : (
-                                        <Button
-                                            loading={updateEmailLoading}
-                                            loadingPosition="center"
-                                            disabled={updateEmailLoading}
-                                            onClick={handleUpdateEmail}
-                                            sx={theme => ({
-                                                alignSelf: 'flex-end',
-                                                bgcolor: theme.palette.main.dark_blue,
-                                                borderRadius: 6,
-                                                color: theme.palette.sand.one,
-                                                fontSize: 14,
-                                                fontWeight: 600,
-                                                height: 'fit-content',
-                                                ml: 2,
-                                                textTransform: "none",
-                                                width: 'fit-content',
-                                                '&.MuiButton-loading': {
-                                                    bgcolor: theme.palette.main.white,
-                                                    opacity: 0.8,
-                                                }
-                                            })}
-                                            variant='contained'>
-                                            Save
-                                        </Button>
-                                    )}
+                                <Button
+                                    loading={updateEmailLoading}
+                                    loadingPosition="center"
+                                    disabled={updateEmailLoading}
+                                    onClick={handleUpdateEmail}
+                                    sx={theme => ({
+                                        alignSelf: 'flex-end',
+                                        bgcolor: theme.palette.main.dark_blue,
+                                        borderRadius: 6,
+                                        color: theme.palette.sand.one,
+                                        fontSize: 14,
+                                        fontWeight: 600,
+                                        height: 'fit-content',
+                                        ml: 2,
+                                        opacity: email === user.email ? 0 : 1,
+                                        textTransform: "none",
+                                        transform: email === user.email ?
+                                            'translateX(-20px)' : 'translateX(0)',
+                                        transition: 'opacity 0.3s ease-in-out, transform 0.3s ease-in-out',
+                                        width: 'fit-content',
+                                        '&.MuiButton-loading': {
+                                            bgcolor: theme.palette.main.white,
+                                            opacity: 0.8,
+                                        }
+                                    })}
+                                    variant='contained'>
+                                    Save
+                                </Button>
                                 {formError &&
                                     !formError.toLowerCase().includes("email") && (
                                         <Alert
@@ -563,10 +573,10 @@ export default function Header({ difficulty, onDifficultyChange }) {
                                     autoComplete='current-password'
                                     endAdornment={
                                         <IconButton
-                                            onClick={() => setShowPassword(s => !s)}
+                                            onClick={handleShowPassword}
                                             onMouseDown={handleMouseDownPassword}
                                             onMouseUp={handleMouseUpPassword}>
-                                            {showPassword ?
+                                            {showPassword && showConfirmPassword ?
                                             <VisibilityOffIcon /> : <VisibilityIcon />}
                                         </IconButton>
                                     }
@@ -576,7 +586,6 @@ export default function Header({ difficulty, onDifficultyChange }) {
                                     onChange={e => {
                                         setPassword(e.target.value);
                                         setFormError('');
-                                        setAlertMessage('');
                                     }}
                                     startAdornment={
                                         <InputAdornment
@@ -585,123 +594,180 @@ export default function Header({ difficulty, onDifficultyChange }) {
                                                 borderRight: '2px solid #39434b',
                                                 pr: .7,
                                             }}>
-                                            <KeyIcon color={alertMessage === '' ? 'action' : 'error'} />
+                                            <KeyIcon color={updatePasswordAlertMessage === 'error' ? 'error' : 'action'} />
                                         </InputAdornment>
                                     }
                                     sx={theme => ({
                                         bgcolor: theme.palette.sand.four,
                                         borderRadius: 1,
                                         color: theme.palette.main.dark_blue,
+                                        mr: 10.25,
                                         mt: 1,
                                         px: 1,
+                                        zIndex: 99,
                                     })}
                                     type={showPassword ? 'text' : 'password'}
                                     value={password}
                                 />
+                            </Grid>
+                            {/* Confirm Password */}
+                            <Box>
+                                {/* Row FlexBox */}
+                                <Box
+                                    sx={{
+                                        display: 'flex',
+                                        justifyContent: 'center',
+                                        opacity: password === '' ? 0 : 1,
+                                        pointerEvents: password === '' ? 'none' : 'auto',
+                                        transform: password === '' ?
+                                            'translateY(-50px)' : 'translateY(0)',
+                                        transition: 'opacity 0.3s ease-in-out, transform 0.3s ease-in-out',
+                                    }}>
+                                    <FormFields
+                                        endAdornment={
+                                            <IconButton
+                                                onClick={handleShowPassword}
+                                                onMouseDown={handleMouseDownPassword}
+                                                onMouseUp={handleMouseUpPassword}>
+                                                {showConfirmPassword && showPassword ?
+                                                <VisibilityOffIcon /> : <VisibilityIcon />}
+                                            </IconButton>
+                                        }
+                                        error={!!formError && /password/i.test(formError)}
+                                        helperText={/password/i.test(formError) ? formError : ''}
+                                        label='Confirm password'
+                                        onChange={e => {
+                                            setConfirmPassword(e.target.value);
+                                            setFormError('');
+                                        }}
+                                        startAdornment={
+                                            <InputAdornment
+                                            position="start"
+                                                sx={{
+                                                    borderRight: '2px solid #39434b',
+                                                    pr: .7,
+                                                }}>
+                                                <KeyIcon color={updatePasswordAlertMessage === 'error' ? 'error' : 'action'} />
+                                            </InputAdornment>
+                                        }
+                                        sx={theme => ({
+                                            bgcolor: theme.palette.sand.four,
+                                            borderRadius: 1,
+                                            color: theme.palette.main.dark_blue,
+                                            mt: 1,
+                                            px: 1,
+                                        })}
+                                        type={showConfirmPassword ? 'text' : 'password'}
+                                        value={confirmPassword}
+                                        />
+                                    <Button
+                                        loading={updatePasswordLoading}
+                                        loadingPosition="center"
+                                        disabled={updatePasswordLoading}
+                                        onClick={handleUpdatePassword}
+                                        sx={theme => ({
+                                            alignSelf: 'flex-end',
+                                            bgcolor: theme.palette.main.dark_blue,
+                                            borderRadius: 6,
+                                            color: theme.palette.sand.one,
+                                            fontSize: 14,
+                                            fontWeight: 600,
+                                            height: 'fit-content',
+                                            ml: 2,
+                                            textTransform: "none",
+                                            width: 'fit-content',
+                                            '&.MuiButton-loading': {
+                                                bgcolor: theme.palette.main.white,
+                                                opacity: 0.8,
+                                            }
+                                        })}
+                                        variant='contained'>
+                                        Save
+                                    </Button>
+                                </Box>
+                                {/* Alerts outside of FlexBox to show below row */}
                                 {formError &&
-                                    !formError.toLowerCase().includes("email") && !formError.toLowerCase().includes("password") && (
+                                    !formError.toLowerCase().includes("password") && (
                                         <Alert
-                                            severity={alertSeverity}
-                                            sx={{ fontWeight: 700, mb: 3 }}
+                                        severity={alertSeverity}
+                                        sx={{ fontWeight: 700, mb: 3 }}
                                             variant='filled'>
                                                 {alertMessage}
                                         </Alert>
                                     )
                                 }
-                                {alertMessage && (
+                                {updatePasswordAlertMessage && (
                                     <Alert
-                                        severity={alertSeverity}
-                                        sx={{ fontWeight: 700, mb: 3 }}
+                                        severity={updatePasswordAlertSeverity}
+                                        sx={{ fontWeight: 700, mb: 3, mt: 1 }}
                                         variant='filled'>
-                                            {alertMessage}
+                                            {updatePasswordAlertMessage}
                                     </Alert>
                                 )}
-                                <Button
-                                    loading={loading}
-                                    loadingPosition="center"
-                                    disabled={authIsLoading}
-                                    // onClick={handleChangePassword}
-                                    sx={theme => ({
-                                        alignSelf: 'flex-end',
-                                        bgcolor: theme.palette.main.dark_blue,
-                                        borderRadius: 6,
-                                        color: theme.palette.sand.one,
-                                        fontSize: 14,
-                                        fontWeight: 600,
-                                        height: 'fit-content',
-                                        ml: 2,
-                                        textTransform: "none",
-                                        width: 'fit-content',
-                                        '&.MuiButton-loading': {
-                                            bgcolor: theme.palette.main.white,
-                                            opacity: 0.8,
-                                        }
-                                    })}
-                                    variant='contained'>
-                                    Save
-                                </Button>
-                            </Grid>
+                            </Box>
 
                             {/* Change avatar/profile picture */}
                             {/* Color Theme */}
 
                             {/* Manage Subscription */}
-
-                            {/* Sign out */}
-                            <Button
-                                loading={loading}
-                                loadingPosition="center"
-                                disabled={authIsLoading}
-                                onClick={handleDrawerSignout}
-                                startIcon={<LogoutIcon />}
-                                sx={theme => ({
-                                    bgcolor: theme.palette.main.dark_blue,
-                                    borderRadius: 6,
-                                    color: theme.palette.sand.one,
-                                    fontSize: '1rem',
-                                    fontWeight: 600,
-                                    mt: 5,
-                                    textTransform: "none",
-                                    width: 'fit-content',
-                                    '&.MuiButton-loading': {
-                                        bgcolor: theme.palette.main.white,
-                                        opacity: 0.8,
-                                    }
-                                })}
-                                variant='contained'>
-                                {authIsLoading
-                                    ? <CircularProgress size={24} color='inherit' />
-                                    : 'Sign Out'
-                                }
-                            </Button>
-                            {/* Delete account */}
-                            <Button
-                                loading={loading}
-                                loadingPosition="center"
-                                disabled={authIsLoading}
-                                onClick={() => setDeleteAccountOpen(true)}
-                                startIcon={<DeleteIcon />}
-                                sx={theme => ({
-                                    bgcolor: '#D32F2F',
-                                    borderRadius: 1,
-                                    color: theme.palette.sand.one,
-                                    fontSize: '1rem',
-                                    fontWeight: 600,
-                                    mt: 5,
-                                    textTransform: "none",
-                                    width: 'fit-content',
-                                    '&.MuiButton-loading': {
-                                        bgcolor: theme.palette.main.white,
-                                        opacity: 0.8,
-                                    }
-                                })}
-                                variant='contained'>
-                                {deleteLoading
-                                    ? <CircularProgress size={24} color='inherit' />
-                                    : 'Delete Account'
-                                }
-                            </Button>
+                        
                         </Stack>
+                        
+                        {/* Sign out */}
+                        <Button
+                            loading={loading}
+                            loadingPosition="center"
+                            disabled={loading}
+                            onClick={handleDrawerSignout}
+                            startIcon={<LogoutIcon />}
+                            sx={theme => ({
+                                bgcolor: theme.palette.main.dark_blue,
+                                borderRadius: 6,
+                                color: theme.palette.sand.one,
+                                fontSize: '1rem',
+                                fontWeight: 600,
+                                mb: 3,
+                                textTransform: "none",
+                                width: 'fit-content',
+                                '&.MuiButton-loading': {
+                                    bgcolor: theme.palette.main.white,
+                                    opacity: 0.8,
+                                }
+                            })}
+                            variant='contained'>
+                            {authIsLoading
+                                ? <CircularProgress size={24} color='inherit' />
+                                : 'Sign Out'
+                            }
+                        </Button>
+                        {/* Delete account */}
+                        <Button
+                            loading={deleteLoading}
+                            loadingPosition="center"
+                            disabled={deleteLoading}
+                            onClick={() => setDeleteAccountOpen(true)}
+                            startIcon={<DeleteIcon />}
+                            sx={theme => ({
+                                bgcolor: '#D32F2F',
+                                borderRadius: 1,
+                                color: theme.palette.sand.one,
+                                fontSize: '1rem',
+                                fontWeight: 600,
+                                mb: 2,
+                                textTransform: "none",
+                                width: 'fit-content',
+                                '&.MuiButton-loading': {
+                                    bgcolor: theme.palette.main.white,
+                                    opacity: 0.8,
+                                }
+                            })}
+                            variant='contained'>
+                            {deleteLoading
+                                ? <CircularProgress size={24} color='inherit' />
+                                : 'Delete Account'
+                            }
+                        </Button>
+                        {/* REPORT ISSUE COMPONENT */}
                     </Box>
                 </Drawer>
             )}
