@@ -3,6 +3,7 @@
 import * as React from "react";
 import {
     Alert,
+    alpha,
     Box,
     Button,
     CircularProgress,
@@ -374,18 +375,13 @@ export default function SignUpPage() {
                                         bgcolor: theme.palette.main.dark_blue,
                                         borderRadius: 6,
                                         color: theme.palette.sand.one,
-                                        // fontSize:
-                                        //     isMobile || isTablet
-                                        //     ? theme.typography.mobile.body.fontSize
-                                        //     : theme.typography.desktop.body.fontSize,
                                         fontSize: '1rem',
                                         fontWeight: 700,
                                         mt: 3,
                                         textTransform: "none",
                                         width: '50%',
                                         '&.MuiButton-loading': {
-                                            bgcolor: theme.palette.main.white,
-                                            opacity: 0.8,
+                                            bgcolor: alpha(theme.palette.main.dark_blue, 0.38)
                                         }
                                     })}
                                     variant='contained'>
