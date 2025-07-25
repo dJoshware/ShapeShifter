@@ -90,6 +90,10 @@ export default function SignUpPage() {
     // Password default preventers
     const handleMouseDownPassword = e => e.preventDefault();
     const handleMouseUpPassword = e => e.preventDefault();
+    const handleShowPassword = () => {
+        setShowPassword(s => !s);
+        setShowConfirmPassword(s => !s);
+    };
 
     // Sign Up handler
     const handleSignup = async () => {
@@ -270,10 +274,10 @@ export default function SignUpPage() {
                                     autoComplete='current-password'
                                     endAdornment={
                                         <IconButton
-                                            onClick={() => setShowPassword(s => !s)}
+                                            onClick={handleShowPassword}
                                             onMouseDown={handleMouseDownPassword}
                                             onMouseUp={handleMouseUpPassword}>
-                                            {showPassword ?
+                                            {showPassword && showConfirmPassword ?
                                             <VisibilityOffIcon /> : <VisibilityIcon />}
                                         </IconButton>
                                     }
@@ -308,10 +312,10 @@ export default function SignUpPage() {
                                 <FormFields
                                     endAdornment={
                                         <IconButton
-                                            onClick={() => setShowConfirmPassword(s => !s)}
+                                            onClick={handleShowPassword}
                                             onMouseDown={handleMouseDownPassword}
                                             onMouseUp={handleMouseUpPassword}>
-                                            {showConfirmPassword ?
+                                            {showConfirmPassword && showPassword ?
                                             <VisibilityOffIcon /> : <VisibilityIcon />}
                                         </IconButton>
                                     }
