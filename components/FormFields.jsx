@@ -11,7 +11,10 @@ export default function FormFields({
     error,
     helperText,
     label,
+    minRows,
+    multiline,
     onChange,
+    required,
     startAdornment,
     sx,
     type,
@@ -27,6 +30,7 @@ export default function FormFields({
                 flexGrow: 1,
                 pt: 1
             }}
+            required={required}
             variant="standard">
             <InputLabel
                 htmlFor={fieldId}
@@ -40,6 +44,8 @@ export default function FormFields({
                 autoComplete={autoComplete}
                 endAdornment={endAdornment}
                 id={fieldId}
+                minRows={minRows}
+                multiline={multiline}
                 onChange={onChange}
                 startAdornment={startAdornment}
                 sx={sx}
