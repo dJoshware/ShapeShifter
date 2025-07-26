@@ -403,7 +403,7 @@ export default function SignUpPage() {
                                             content: '""',
                                             position: 'absolute',
                                             left: 105,
-                                            bottom: 0,
+                                            bottom: -2,
                                             width: '50%',
                                             height: '2px',
                                             bgcolor: theme.palette.main.dark_blue,
