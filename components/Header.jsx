@@ -533,9 +533,9 @@ export default function Header({ difficulty, onDifficultyChange }) {
                                     value={email}
                                 />
                                 <Button
+                                    disabled={updateEmailLoading}
                                     loading={updateEmailLoading}
                                     loadingPosition="center"
-                                    disabled={updateEmailLoading}
                                     onClick={handleUpdateEmail}
                                     sx={theme => ({
                                         alignSelf: 'flex-end',
@@ -672,9 +672,9 @@ export default function Header({ difficulty, onDifficultyChange }) {
                                         value={confirmPassword}
                                         />
                                     <Button
+                                        disabled={updatePasswordLoading}
                                         loading={updatePasswordLoading}
                                         loadingPosition="center"
-                                        disabled={updatePasswordLoading}
                                         onClick={handleUpdatePassword}
                                         sx={theme => ({
                                             alignSelf: 'flex-end',
@@ -725,9 +725,9 @@ export default function Header({ difficulty, onDifficultyChange }) {
                         
                         {/* Sign out */}
                         <Button
+                            disabled={signoutLoading}
                             loading={signoutLoading}
                             loadingPosition="center"
-                            disabled={signoutLoading}
                             onClick={handleDrawerSignout}
                             startIcon={<LogoutIcon />}
                             sx={theme => ({
@@ -751,9 +751,9 @@ export default function Header({ difficulty, onDifficultyChange }) {
                         </Button>
                         {/* Delete account */}
                         <Button
+                            disabled={deleteLoading}
                             loading={deleteLoading}
                             loadingPosition="center"
-                            disabled={deleteLoading}
                             onClick={() => setDeleteAccountOpen(true)}
                             startIcon={<DeleteIcon />}
                             sx={theme => ({
