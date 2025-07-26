@@ -379,7 +379,7 @@ export default function SignUpPage() {
                                         fontWeight: 700,
                                         mt: 3,
                                         textTransform: "none",
-                                        width: '50%',
+                                        width: '30%',
                                         '&.MuiButton-loading': {
                                             bgcolor: alpha(theme.palette.main.dark_blue, 0.38)
                                         }
@@ -394,6 +394,7 @@ export default function SignUpPage() {
                                     href='/signin'
                                     sx={theme => ({
                                         color: theme.palette.main.dark_blue,
+                                        fontWeight: 600,
                                         position: 'relative',
                                         textDecoration: 'none',
                                         textDecorationColor: theme.palette.main.dark_blue,
