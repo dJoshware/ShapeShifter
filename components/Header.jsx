@@ -492,10 +492,12 @@ export default function Header({ difficulty, onDifficultyChange }) {
                                 color: theme.palette.sand.one,
                                 fontSize: 16,
                                 fontWeight: 600,
-                                mb: 3,
+                                mb: 1,
                             })}>
                             {user && `User ID: ${user.id}`}
                         </Typography>
+                        {/* Report Issue component */}
+                        <ReportIssue email={email} />
                         <Stack
                             height='100%'
                             spacing={3}>
@@ -775,8 +777,6 @@ export default function Header({ difficulty, onDifficultyChange }) {
                                 : 'Delete Account'
                             }
                         </Button>
-                        {/* Report Issue component */}
-                        <ReportIssue email={email} />
                     </Box>
                 </Drawer>
             )}
