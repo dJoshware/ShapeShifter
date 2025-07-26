@@ -46,7 +46,7 @@ import {
     updateEmail,
     updatePassword,
     updateSettings
-} from '../lib/CRUD';
+} from '../lib/API';
 
 export default function Header({ difficulty, onDifficultyChange }) {
 
