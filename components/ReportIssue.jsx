@@ -65,6 +65,7 @@ export default function ReportIssue({ email }) {
                     color: theme.palette.main.dark_blue,
                     fontSize: '1rem',
                     fontWeight: 600,
+                    mb: 1,
                     position: 'relative',
                     textTransform: 'none',
                     transition: 'color 200ms ease-in-out',
