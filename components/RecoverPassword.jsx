@@ -168,7 +168,7 @@ export default function RecoverPassword() {
                         !formError.toLowerCase().includes("email") && (
                             <Alert
                                 severity={alertSeverity}
-                                sx={{ fontWeight: 700, mb: 3 }}
+                                sx={{ fontWeight: 700 }}
                                 variant='filled'>
                                     {alertMessage}
                             </Alert>
@@ -177,7 +177,7 @@ export default function RecoverPassword() {
                     {alertMessage && (
                         <Alert
                             severity={alertSeverity}
-                            sx={{ fontWeight: 700, mb: 3 }}
+                            sx={{ fontWeight: 700 }}
                             variant='filled'>
                                 {alertMessage}
                         </Alert>
