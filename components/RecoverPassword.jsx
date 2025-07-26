@@ -4,7 +4,6 @@ import * as React from 'react';
 import {
     Alert,
     Button,
-    CircularProgress,
     Dialog,
     DialogActions,
     DialogContent,
@@ -45,7 +44,7 @@ export default function RecoverPassword() {
         }
 
         const { error } = await supabase.auth.resetPasswordForEmail(formEmail, {
-            redirectTo: '/reset-password'
+            redirectTo: 'http://localhost:3000/reset-password'
         });
 
         if (error) {
@@ -57,7 +56,7 @@ export default function RecoverPassword() {
             setRecoveryLoading(false);
             setAlertSeverity('success');
             setAlertMessage('Recovery email sent! Please wait a moment...')
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            await new Promise(resolve => setTimeout(resolve, 3000));
             setRecoveryOpen(false);
         }
     };
@@ -138,7 +137,7 @@ export default function RecoverPassword() {
                     <FormFields
                         error={!!formError && /email/i.test(formError)}
                         helperText={/email/i.test(formError) ? formError : ''}
-                        label='Where should we send your recovery email?'
+                        label='Where should we send your recovery link?'
                         onChange={e => {
                             setFormEmail(e.target.value);
                             setFormError('');
