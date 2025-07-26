@@ -24,6 +24,7 @@ import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { useAuth } from "../../lib/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import FormFields from "../../components/FormFields";
+import RecoverPassword from "../../components/RecoverPassword";
 
 export default function LoginPage() {
 
@@ -59,7 +60,6 @@ export default function LoginPage() {
     };
 
     // Password handlers
-    const handleClickShowPassword = () => setShowPassword(show => !show);
     const handleMouseDownPassword = e => e.preventDefault();
     const handleMouseUpPassword = e => e.preventDefault();
 
@@ -299,46 +299,20 @@ export default function LoginPage() {
                                 <Grid
                                     container
                                     justifyContent='space-between'>
-                                    <Link
-                                        href='#'
-                                        sx={theme => ({
-                                            color: theme.palette.main.dark_blue,
-                                            position: 'relative',
-                                            textDecoration: 'none',
-                                            textDecorationColor: theme.palette.main.dark_blue,
-                                            transition: 'color 200ms ease-in-out',
-                                            '&::after': {
-                                                bgcolor: theme.palette.main.dark_blue,
-                                                bottom: 0,
-                                                content: '""',
-                                                height: '2px',
-                                                left: 0,
-                                                position: 'absolute',
-                                                transform: 'scaleX(0)',
-                                                transformOrigin: 'center',
-                                                transition: 'transform 200ms ease-in-out',
-                                                width: '100%',
-                                            },
-                                            '&:hover': {
-                                                color: theme.palette.main.dark_blue,
-                                            },
-                                            '&:hover::after': {
-                                                transform: 'scaleX(1)',
-                                            },
-                                        })}>
-                                        Forgot password?
-                                    </Link>
+                                    <RecoverPassword />
                                     <Link
                                         href='/create-account'
                                         sx={theme => ({
+                                            alignSelf: 'center',
                                             color: theme.palette.main.dark_blue,
+                                            fontWeight: 600,
                                             position: 'relative',
                                             textDecoration: 'none',
                                             textDecorationColor: theme.palette.main.dark_blue,
                                             transition: 'color 200ms ease-in-out',
                                             '&::after': {
                                                 bgcolor: theme.palette.main.dark_blue,
-                                                bottom: 0,
+                                                bottom: -3,
                                                 content: '""',
                                                 height: '2px',
                                                 left: 0,
