@@ -32,7 +32,7 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import SettingsIcon from '@mui/icons-material/Settings';
 import LogoutIcon from '@mui/icons-material/Logout';
-import PersonIcon from '@mui/icons-material/Person';
+import EmailIcon from '@mui/icons-material/Email';
 import KeyIcon from '@mui/icons-material/Key';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
@@ -40,6 +40,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../lib/contexts/AuthContext';
 import FormFields from './FormFields';
+import ReportIssue from './ReportIssue';
 import {
     deleteAccount,
     updateEmail,
@@ -57,13 +58,13 @@ export default function Header({ difficulty, onDifficultyChange }) {
     const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'lg')); // 600px - 1200px
 
     // State for Menu and Drawer
-    const [loading, setLoading] = React.useState(false); // WON'T NEED
     const [anchorEl, setAnchorEl] = React.useState(null);
     const [formError, setFormError] = React.useState("");
     const [alertMessage, setAlertMessage] = React.useState(""); // PROLLY WON'T NEED
     const [alertSeverity, setAlertSeverity] = React.useState("success"); // PROLLY WON'T NEED
     // State for user settings 
     const [drawerOpen, setDrawerOpen] = React.useState(false);
+    const [signoutLoading, setSignOutLoading] = React.useState(false);
     // State for paywall modal
     const [paywallOpen, setPaywallOpen] = React.useState(false);
     // Track whether they have Pro
@@ -124,9 +125,20 @@ export default function Header({ difficulty, onDifficultyChange }) {
     const handleOpenMenu = e => setAnchorEl(e.currentTarget);
     const handleCloseMenu = () => setAnchorEl(null);
     const handleSignin = () => router.push('/signin');
-    const handleSettingsClick = () => { handleCloseMenu(); setDrawerOpen(true); };
-    const handleSignoutClick = async () => { handleCloseMenu(); await signOut(); };
-    const handleDrawerSignout = async () => { handleCloseDrawer(); await signOut(); };
+    const handleSettingsClick = () => {
+        handleCloseMenu();
+        setDrawerOpen(true);
+    };
+    const handleSignoutClick = async () => {
+        handleCloseMenu();
+        await signOut();
+    };
+    const handleDrawerSignout = async () => {
+        setSignOutLoading(true);
+        handleCloseDrawer();
+        await signOut();
+        setSignOutLoading(false);
+    };
     const handleCloseDrawer = () => setDrawerOpen(false);
     // Password default preventers
     const handleMouseDownPassword = e => e.preventDefault();
@@ -506,7 +518,7 @@ export default function Header({ difficulty, onDifficultyChange }) {
                                                 borderRight: '2px solid #39434b',
                                                 pr: .8,
                                             }}>
-                                            <PersonIcon color={updateEmailAlertMessage === 'error' ? 'error' : 'action'} />
+                                            <EmailIcon color={updateEmailAlertMessage === 'error' ? 'error' : 'action'} />
                                         </InputAdornment>
                                     }
                                     sx={theme => ({
@@ -541,8 +553,7 @@ export default function Header({ difficulty, onDifficultyChange }) {
                                         transition: 'opacity 0.3s ease-in-out, transform 0.3s ease-in-out',
                                         width: 'fit-content',
                                         '&.MuiButton-loading': {
-                                            bgcolor: theme.palette.main.white,
-                                            opacity: 0.8,
+                                            bgcolor: alpha(theme.palette.main.dark_blue, 0.38)
                                         }
                                     })}
                                     variant='contained'>
@@ -677,8 +688,7 @@ export default function Header({ difficulty, onDifficultyChange }) {
                                             textTransform: "none",
                                             width: 'fit-content',
                                             '&.MuiButton-loading': {
-                                                bgcolor: theme.palette.main.white,
-                                                opacity: 0.8,
+                                                bgcolor: alpha(theme.palette.main.dark_blue, 0.38)
                                             }
                                         })}
                                         variant='contained'>
@@ -715,9 +725,9 @@ export default function Header({ difficulty, onDifficultyChange }) {
                         
                         {/* Sign out */}
                         <Button
-                            loading={loading}
+                            loading={signoutLoading}
                             loadingPosition="center"
-                            disabled={loading}
+                            disabled={signoutLoading}
                             onClick={handleDrawerSignout}
                             startIcon={<LogoutIcon />}
                             sx={theme => ({
@@ -730,8 +740,7 @@ export default function Header({ difficulty, onDifficultyChange }) {
                                 textTransform: "none",
                                 width: 'fit-content',
                                 '&.MuiButton-loading': {
-                                    bgcolor: theme.palette.main.white,
-                                    opacity: 0.8,
+                                    bgcolor: alpha(theme.palette.main.dark_blue, 0.38)
                                 }
                             })}
                             variant='contained'>
@@ -757,8 +766,7 @@ export default function Header({ difficulty, onDifficultyChange }) {
                                 textTransform: "none",
                                 width: 'fit-content',
                                 '&.MuiButton-loading': {
-                                    bgcolor: theme.palette.main.white,
-                                    opacity: 0.8,
+                                    bgcolor: alpha(theme.palette.main.dark_blue, 0.38)
                                 }
                             })}
                             variant='contained'>
@@ -767,7 +775,8 @@ export default function Header({ difficulty, onDifficultyChange }) {
                                 : 'Delete Account'
                             }
                         </Button>
-                        {/* REPORT ISSUE COMPONENT */}
+                        {/* Report Issue component */}
+                        <ReportIssue email={email} />
                     </Box>
                 </Drawer>
             )}
