@@ -285,7 +285,7 @@ export default function LoginPage() {
                                         fontSize: '1rem',
                                         fontWeight: 700,
                                         textTransform: "none",
-                                        width: '50%',
+                                        width: '30%',
                                         '&.MuiButton-loading': {
                                             bgcolor: alpha(theme.palette.main.dark_blue, 0.38)
                                         }
