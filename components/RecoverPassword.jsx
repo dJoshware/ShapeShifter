@@ -189,7 +189,10 @@ export default function RecoverPassword() {
                         mb: 1,
                     })}>
                     <Button
-                        onClick={() => setRecoveryOpen(false)}
+                        onClick={() => {
+                            setFormError('');
+                            setRecoveryOpen(false);
+                        }}
                         sx={theme => ({
                             bgcolor: theme.palette.main.dark_blue,
                             borderRadius: 6,
