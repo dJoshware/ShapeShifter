@@ -461,9 +461,6 @@ export default function Header({ difficulty, onDifficultyChange }) {
                                 Sign out
                             </Typography>
                         </MenuItem>
-
-                        {/* Report an issua */}
-
                     </Menu>
                 </Grid>
             </AppBar>
@@ -497,7 +494,7 @@ export default function Header({ difficulty, onDifficultyChange }) {
                             {user && `User ID: ${user.id}`}
                         </Typography>
                         {/* Report Issue component */}
-                        <ReportIssue email={email} />
+                        <ReportIssue />
                         <Stack
                             height='100%'
                             spacing={3}>
