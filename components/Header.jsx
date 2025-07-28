@@ -160,7 +160,7 @@ export default function Header({ difficulty, onDifficultyChange }) {
             setDeleteLoading(false);
             setDeleteAlertSeverity("success");
             setDeleteAlertMessage("Your account has been deleted!");
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            await new Promise(resolve => setTimeout(resolve, 3000));
             setDeleteAccountOpen(false);
             handleCloseDrawer();
         } catch (err) {
@@ -191,7 +191,7 @@ export default function Header({ difficulty, onDifficultyChange }) {
             setUpdateEmailLoading(false);
             setUpdateEmailAlertSeverity("success");
             setUpdateEmailAlertMessage("Your email has been updated!");
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            await new Promise(resolve => setTimeout(resolve, 3000));
             setUpdateEmailAlertMessage('');
         } catch (err) {
             console.error('There was a problem updating the email:', err);
@@ -237,7 +237,7 @@ export default function Header({ difficulty, onDifficultyChange }) {
             setUpdatePasswordLoading(false);
             setUpdatePasswordAlertSeverity('success');
             setUpdatePasswordAlertMessage('Your password has been updated!');
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            await new Promise(resolve => setTimeout(resolve, 3000));
             setUpdatePasswordAlertMessage('');
         } catch (err) {
             console.error('There was a problem updating your password:', err);
