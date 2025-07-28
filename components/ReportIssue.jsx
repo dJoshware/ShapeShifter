@@ -86,7 +86,7 @@ export default function ReportIssue() {
             if (result.success) {
                 setReportLoading(false);
                 setReportAlertSeverity('success');
-                setReportAlertMessage('Report submitted successfully!');
+                setReportAlertMessage('Report submitted successfully! Please double check your spam folder.');
                 setEmail('');
                 setMessage('');
                 setFiles([]);
@@ -352,7 +352,7 @@ export default function ReportIssue() {
                     {reportAlertMessage && (
                         <Alert
                             severity={reportAlertSeverity}
-                            sx={{ fontWeight: 700 }}
+                            sx={{ fontWeight: 700, mt: 2 }}
                             variant='filled'>
                                 {reportAlertMessage}
                         </Alert>
