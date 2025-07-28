@@ -268,9 +268,9 @@ export default function LoginPage() {
                                 </Alert>
                             )}
                             <Button
+                                disabled={loading}
                                 loading={loading}
                                 loadingPosition="center"
-                                disabled={authIsLoading}
                                 onClick={handleSignin}
                                 sx={theme => ({
                                     alignSelf: 'center',
@@ -286,10 +286,7 @@ export default function LoginPage() {
                                     }
                                 })}
                                 variant='contained'>
-                                {authIsLoading
-                                    ? <CircularProgress size={24} color='inherit' />
-                                    : 'Sign In'
-                                }
+                                Sign In
                             </Button>
                             <Grid
                                 container

@@ -45,7 +45,8 @@ import {
     deleteAccount,
     updateEmail,
     updatePassword,
-    updateSettings
+    updateSettings,
+    isValidPassword
 } from '../lib/API';
 
 export default function Header({ difficulty, onDifficultyChange }) {
@@ -70,24 +71,10 @@ export default function Header({ difficulty, onDifficultyChange }) {
     // Track whether they have Pro
     const [hasPro, setHasPro] = React.useState(false);
 
-    // Password validator for account registration
-    function isValidPassword(password) {
-        const minLength = /.{8,}/;
-        const hasUpper = /[A-Z]/;
-        const hasLower = /[a-z]/;
-        const hasDigit = /[0-9]/;
-        const hasSpecial = /[!@#$%^&-_.?/]/; // Allowed specials
-        const notAllowed = /[*()+={}|,<>:;"']/; // Blocked specials
-
-        return (
-            minLength.test(password) &&
-            hasUpper.test(password) &&
-            hasLower.test(password) &&
-            hasDigit.test(password) &&
-            hasSpecial.test(password) &&
-            !notAllowed.test(password)
-        );
-    }
+    // Lock only if user does NOT have Pro
+    const lockedLevels = hasPro ? [] : ['Advanced', 'Draw Mode'];
+    // User avatar (maybe)
+    const userInitial = user?.email ? user.email.charAt(0).toUpperCase() : 'U';
 
     // Handles level changes; Dialog pop up if locked level
     const handleClick = level => {
@@ -270,11 +257,6 @@ export default function Header({ difficulty, onDifficultyChange }) {
     React.useEffect(() => {
         if (user?.email) setEmail(user.email);
     }, [user?.email]);
-
-    // Lock only if user does NOT have Pro
-    const lockedLevels = hasPro ? [] : ['Advanced', 'Draw Mode'];
-    // User avatar (maybe)
-    const userInitial = user?.email ? user.email.charAt(0).toUpperCase() : 'U';
 
     // If auth is loading and we don't have a user yet, show a general loader
     if (authIsLoading && !user) {

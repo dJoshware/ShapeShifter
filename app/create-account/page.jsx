@@ -25,6 +25,7 @@ import { useAuth } from "../../lib/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import FormFields from "../../components/FormFields";
 import ReportIssue from "../../components/ReportIssue";
+import { isValidPassword } from "../../lib/API";
 
 export default function SignUpPage() {
 
@@ -45,25 +46,6 @@ export default function SignUpPage() {
     const [loading, setLoading] = React.useState(false);
     const [alertMessage, setAlertMessage] = React.useState("");
     const [alertSeverity, setAlertSeverity] = React.useState("success");
-
-    // Password validator for account registration
-    function isValidPassword(password) {
-        const minLength = /.{8,}/;
-        const hasUpper = /[A-Z]/;
-        const hasLower = /[a-z]/;
-        const hasDigit = /[0-9]/;
-        const hasSpecial = /[!@#$%^&-_.?/]/; // Allowed specials
-        const notAllowed = /[*()+={}|,<>:;"']/; // Blocked specials
-
-        return (
-            minLength.test(password) &&
-            hasUpper.test(password) &&
-            hasLower.test(password) &&
-            hasDigit.test(password) &&
-            hasSpecial.test(password) &&
-            !notAllowed.test(password)
-        );
-    }
 
     const validateForm = () => {
         setFormError("");
@@ -212,9 +194,7 @@ export default function SignUpPage() {
                     alignItems='center'
                     container
                     justifyContent={isMobile || isTablet ? 'center' : 'space-evenly'}
-                    sx={theme => ({
-                        p: 4,
-                    })}>
+                    sx={{ p: 4 }}>
                     <Box
                         sx={theme => ({
                             bgcolor: theme.palette.sand.four,
@@ -273,7 +253,6 @@ export default function SignUpPage() {
                                 value={email}
                             />
                             <FormFields
-                                autoComplete='current-password'
                                 endAdornment={
                                     <IconButton
                                         onClick={handleShowPassword}
@@ -368,6 +347,7 @@ export default function SignUpPage() {
                                 </Alert>
                             )}
                             <Button
+                                disabled={loading}
                                 loading={loading}
                                 loadingPosition="center"
                                 onClick={handleSignup}
@@ -386,10 +366,7 @@ export default function SignUpPage() {
                                     }
                                 })}
                                 variant='contained'>
-                                {authIsLoading
-                                    ? <CircularProgress size={24} color='inherit' />
-                                    : 'Sign Up'
-                                }
+                                Sign Up
                             </Button>
                             <Link
                                 href='/signin'

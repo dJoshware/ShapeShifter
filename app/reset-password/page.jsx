@@ -23,6 +23,7 @@ import { useAuth } from "../../lib/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import FormFields from "../../components/FormFields";
 import createClient from "../../lib/supabaseBrowserClient";
+import { isValidPassword } from "../../lib/API";
 
 export default function PasswordResetPage() {
 
@@ -44,25 +45,6 @@ export default function PasswordResetPage() {
     const [alertSeverity, setAlertSeverity] = React.useState("success");
     // State for completion of password update
     const [isResetComplete, setResetComplete] = React.useState(false);
-
-    // Password validator for account registration
-    function isValidPassword(password) {
-        const minLength = /.{8,}/;
-        const hasUpper = /[A-Z]/;
-        const hasLower = /[a-z]/;
-        const hasDigit = /[0-9]/;
-        const hasSpecial = /[!@#$%^&-_.?/]/; // Allowed specials
-        const notAllowed = /[*()+={}|,<>:;"']/; // Blocked specials
-
-        return (
-            minLength.test(password) &&
-            hasUpper.test(password) &&
-            hasLower.test(password) &&
-            hasDigit.test(password) &&
-            hasSpecial.test(password) &&
-            !notAllowed.test(password)
-        );
-    }
 
     const validateForm = () => {
         setFormError("");
@@ -240,7 +222,6 @@ export default function PasswordResetPage() {
                         <Stack spacing={4}>
                             {/* New Password */}
                             <FormFields
-                                autoComplete='current-password'
                                 endAdornment={
                                     <IconButton
                                         onClick={handleShowPassword}
@@ -374,10 +355,7 @@ export default function PasswordResetPage() {
                                         }
                                     })}
                                     variant='contained'>
-                                    {loading
-                                        ? <CircularProgress size={24} color='inherit' />
-                                        : 'Save'
-                                    }
+                                    Save
                                 </Button>
                             </Box>
                         </Stack>

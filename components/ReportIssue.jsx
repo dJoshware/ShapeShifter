@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import {
+    Alert,
     alpha,
     Box,
     Button,
@@ -23,15 +24,29 @@ import EmailIcon from '@mui/icons-material/Email';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import ClearIcon from '@mui/icons-material/Clear';
 
-export default function ReportIssue({ email }) {
+export default function ReportIssue() {
     const theme = useTheme();
     // Media queries
     const isMobile = useMediaQuery(theme.breakpoints.down('sm')); // <600px
     const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'lg')); // 600px - 1200px
 
     // States and handlers
+    // Email
+    const [email, setEmail] = React.useState('');
+    const [emailError, setEmailError] = React.useState('');
+    const [emailAlertMessage, setEmailAlertMessage] = React.useState('');
+    const [emailAlertSeverity, setEmailAlertSeverity] = React.useState('success');
+    // Message
+    const [message, setMessage] = React.useState('');
+    const [messageError, setMessageError] = React.useState('');
+    const [messageAlertMessage, setMessageAlertMessage] = React.useState('');
+    const [messageAlertSeverity, setMessageAlertSeverity] = React.useState('success');
+    // Submission
+    const [reportAlertMessage, setReportAlertMessage] = React.useState('');
+    const [reportAlertSeverity, setReportAlertSeverity] = React.useState('success');
     const [reportLoading, setReportLoading] = React.useState(false);
     const [reportIssueOpen, setReportIssueOpen] = React.useState(false);
+
     const [files, setFiles] = React.useState([]);
     const handleFileUpload = e => {
         const fileList = Array.from(e.target.files);
@@ -40,6 +55,55 @@ export default function ReportIssue({ email }) {
     }
     const handleSubmitReport = async () => {
         setReportLoading(true);
+
+        if (!email || !message) {
+            if (!email) setEmailError('This field is required.');
+            if (!message) setMessageError('This field is required.');
+            return;
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!email.trim() || !emailRegex.test(email)) {
+            setEmailError("Please enter a valid email address.");
+            return;
+        }
+
+        try {
+            const formData = new FormData();
+            formData.append('email', email);
+            formData.append('message', message);
+            files.forEach(file => {
+                formData.append('files', file);
+            });
+
+            const res = await fetch('/api/report-issue', {
+                method: 'POST',
+                body: formData,
+            });
+
+            const result = await res.json();
+
+            if (result.success) {
+                setReportLoading(false);
+                setReportAlertSeverity('success');
+                setReportAlertMessage('Report submitted successfully!');
+                setEmail('');
+                setMessage('');
+                setFiles([]);
+                await new Promise(resolve => setTimeout(resolve, 3000));
+                setReportIssueOpen(false);
+            } else {
+                setReportLoading(false);
+                setReportAlertSeverity('error');
+                setReportAlertMessage('Something went wrong. Please try again.');    
+            }
+            
+        } catch (err) {
+            console.error('Report submission error:', err);
+            setReportLoading(false);
+            setReportAlertSeverity('error');
+            setReportAlertMessage('An error occurred while submitting the report.');
+        }
     };
 
     // File upload field
@@ -133,9 +197,14 @@ export default function ReportIssue({ email }) {
                     })}>
                     {/* Email */}
                     <FormFields
-                        // error={}
-                        // helperText={}
+                        error={!!emailError && /email/i.test(emailError)}
+                        helperText={/email/i.test(emailError) ? emailError : ''}
                         label='Your email'
+                        onChange={e => {
+                            setEmail(e.target.value);
+                            setEmailError('');
+                            setEmailAlertMessage('');
+                        }}
                         required={true}
                         startAdornment={
                             <InputAdornment
@@ -158,14 +227,37 @@ export default function ReportIssue({ email }) {
                         type='email'
                         value={email}
                     />
+                    {emailError &&
+                        !emailError.toLowerCase().includes("email") && (
+                            <Alert
+                                severity={emailAlertSeverity}
+                                sx={{ fontWeight: 700 }}
+                                variant='filled'>
+                                    {emailAlertMessage}
+                            </Alert>
+                        )
+                    }
+                    {emailAlertMessage && (
+                        <Alert
+                            severity={emailAlertSeverity}
+                            sx={{ fontWeight: 700 }}
+                            variant='filled'>
+                                {emailAlertMessage}
+                        </Alert>
+                    )}
                     {/* Description of error */}
                     <FormFields
                         autoComplete='off'
-                        // error={}
-                        // helperText={}
+                        error={!!messageError && /message/i.test(messageError)}
+                        helperText={/message/i.test(messageError) ? messageError : ''}
                         label='Describe the problem'
                         minRows={5}
                         multiline={true}
+                        onChange={e => {
+                            setMessage(e.target.value);
+                            setMessageError('');
+                            setMessageAlertMessage('');
+                        }}
                         required={true}
                         sx={theme => ({
                             bgcolor: 'transparent',
@@ -176,7 +268,26 @@ export default function ReportIssue({ email }) {
                             width: '100%',
                         })}
                         type='text'
+                        value={message}
                     />
+                    {messageError &&
+                        !messageError.toLowerCase().includes("message") && (
+                            <Alert
+                                severity={messageAlertSeverity}
+                                sx={{ fontWeight: 700 }}
+                                variant='filled'>
+                                    {messageAlertMessage}
+                            </Alert>
+                        )
+                    }
+                    {messageAlertMessage && (
+                        <Alert
+                            severity={messageAlertSeverity}
+                            sx={{ fontWeight: 700 }}
+                            variant='filled'>
+                                {messageAlertMessage}
+                        </Alert>
+                    )}
                     {/* Screenshot Field */}
                     <Typography
                         sx={theme => ({
@@ -238,6 +349,14 @@ export default function ReportIssue({ email }) {
                             ))}
                         </Box>
                     )}
+                    {reportAlertMessage && (
+                        <Alert
+                            severity={reportAlertSeverity}
+                            sx={{ fontWeight: 700 }}
+                            variant='filled'>
+                                {reportAlertMessage}
+                        </Alert>
+                    )}
                 </DialogContent>
                 <DialogActions
                     sx={theme => ({
@@ -261,7 +380,10 @@ export default function ReportIssue({ email }) {
                         Cancel
                     </Button>
                     <Button
-                        onClick={() => alert('Report submitted!')}
+                        disabled={reportLoading}
+                        loading={reportLoading}
+                        loadingPosition='center'
+                        onClick={handleSubmitReport}
                         sx={theme => ({
                             bgcolor: theme.palette.main.dark_blue,
                             borderRadius: 6,
