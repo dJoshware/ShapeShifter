@@ -24,6 +24,7 @@ import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { useAuth } from "../../lib/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import FormFields from "../../components/FormFields";
+import ReportIssue from "../../components/ReportIssue";
 
 export default function SignUpPage() {
 
@@ -214,215 +215,216 @@ export default function SignUpPage() {
                     sx={theme => ({
                         p: 4,
                     })}>
-                    {/* <Grid size={{ xs: 10, sm: 8, md: 6, lg: 4 }}> */}
-                        <Box
+                    <Box
+                        sx={theme => ({
+                            bgcolor: theme.palette.sand.four,
+                            borderRadius: 2,
+                            boxShadow: 3,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            mb: 2,
+                            p: isMobile || isTablet ? 3 : 4,
+                            width: '100%'
+                        })}
+                        textAlign='center'>
+                        <Typography
+                            component='h3'
+                            display='block'
                             sx={theme => ({
-                                bgcolor: theme.palette.sand.four,
-                                borderRadius: 2,
-                                boxShadow: 3,
-                                display: 'flex',
-                                flexDirection: 'column',
-                                p: isMobile || isTablet ? 3 : 4,
-                                width: '100%'
-                            })}
-                            textAlign='center'>
-                            <Typography
-                                component='h3'
-                                display='block'
-                                sx={theme => ({
-                                    color: theme.palette.sand.one,
-                                    fontSize:
-                                        isMobile || isTablet ?
-                                        theme.typography.mobile.h3.fontSize :
-                                        theme.typography.desktop.h3.fontSize,
-                                    fontWeight: 700,
-                                    mb: 2,
-                                })}>
-                                Create an account
-                            </Typography>
-                            <Stack spacing={3}>
-                                <FormFields
-                                    autoComplete='email'
-                                    error={!!formError && /email/i.test(formError)}
-                                    helperText={/email/i.test(formError) ? formError : ''}
-                                    label='Email'
-                                    onChange={e => {
-                                        setEmail(e.target.value);
-                                        setFormError('');
-                                        setAlertMessage('');
-                                    }}
-                                    startAdornment={
-                                        <InputAdornment
-                                            position="start"
-                                            sx={{
-                                                borderRight: '2px solid #39434b',
-                                                pr: .8,
-                                            }}>
-                                            <PersonIcon color={alertMessage ? 'error' : 'action'} />
-                                        </InputAdornment>
-                                    }
-                                    sx={theme => ({
-                                        bgcolor: theme.palette.sand.four,
-                                        borderRadius: 1,
-                                        color: theme.palette.main.dark_blue,
-                                        mt: 1,
-                                        px: 1,
-                                    })}
-                                    type='email'
-                                    value={email}
-                                />
-                                <FormFields
-                                    autoComplete='current-password'
-                                    endAdornment={
-                                        <IconButton
-                                            onClick={handleShowPassword}
-                                            onMouseDown={handleMouseDownPassword}
-                                            onMouseUp={handleMouseUpPassword}>
-                                            {showPassword && showConfirmPassword ?
-                                            <VisibilityOffIcon /> : <VisibilityIcon />}
-                                        </IconButton>
-                                    }
-                                    error={!!formError && /password/i.test(formError)}
-                                    helperText={/password/i.test(formError) ? formError : ''}
-                                    label='Password'
-                                    onChange={e => {
-                                        setPassword(e.target.value);
-                                        setFormError('');
-                                        setAlertMessage('');
-                                    }}
-                                    startAdornment={
-                                        <InputAdornment
-                                            position="start"
-                                            sx={{
-                                                borderRight: '2px solid #39434b',
-                                                pr: .7,
-                                            }}>
-                                            <KeyIcon color={alertMessage ? 'error' : 'action'} />
-                                        </InputAdornment>
-                                    }
-                                    sx={theme => ({
-                                        bgcolor: theme.palette.sand.four,
-                                        borderRadius: 1,
-                                        color: theme.palette.main.dark_blue,
-                                        mt: 1,
-                                        px: 1,
-                                    })}
-                                    type={showPassword ? 'text' : 'password'}
-                                    value={password}
-                                />
-                                <FormFields
-                                    endAdornment={
-                                        <IconButton
-                                            onClick={handleShowPassword}
-                                            onMouseDown={handleMouseDownPassword}
-                                            onMouseUp={handleMouseUpPassword}>
-                                            {showConfirmPassword && showPassword ?
-                                            <VisibilityOffIcon /> : <VisibilityIcon />}
-                                        </IconButton>
-                                    }
-                                    error={!!confirmError}
-                                    helperText={confirmError}
-                                    label='Confirm Password'
-                                    onChange={e => {
-                                        setConfirmPassword(e.target.value);
-                                        setFormError('');
-                                        setAlertMessage('');
-                                    }}
-                                    startAdornment={
-                                        <InputAdornment
-                                            position="start"
-                                            sx={{
-                                                borderRight: '2px solid #39434b',
-                                                pr: .7,
-                                            }}>
-                                            <KeyIcon color={alertMessage ? 'error' : 'action'} />
-                                        </InputAdornment>
-                                    }
-                                    sx={theme => ({
-                                        bgcolor: theme.palette.sand.four,
-                                        borderRadius: 1,
-                                        color: theme.palette.main.dark_blue,
-                                        mt: 1,
-                                        px: 1,
-                                    })}
-                                    type={showConfirmPassword ? 'text' : 'password'}
-                                    value={confirmPassword}
-                                />
-                                {formError &&
-                                    !formError.toLowerCase().includes("email") && !formError.toLowerCase().includes("password") && (
-                                        <Alert
-                                            severity={alertSeverity}
-                                            sx={{ fontWeight: 700, mb: 3 }}
-                                            variant='filled'>
-                                                {alertMessage}
-                                        </Alert>
-                                    )
+                                color: theme.palette.sand.one,
+                                fontSize:
+                                    isMobile || isTablet ?
+                                    theme.typography.mobile.h3.fontSize :
+                                    theme.typography.desktop.h3.fontSize,
+                                fontWeight: 700,
+                                mb: 2,
+                            })}>
+                            Create an account
+                        </Typography>
+                        <Stack spacing={3}>
+                            <FormFields
+                                autoComplete='email'
+                                error={!!formError && /email/i.test(formError)}
+                                helperText={/email/i.test(formError) ? formError : ''}
+                                label='Email'
+                                onChange={e => {
+                                    setEmail(e.target.value);
+                                    setFormError('');
+                                    setAlertMessage('');
+                                }}
+                                startAdornment={
+                                    <InputAdornment
+                                        position="start"
+                                        sx={{
+                                            borderRight: '2px solid #39434b',
+                                            pr: .8,
+                                        }}>
+                                        <PersonIcon color={alertMessage ? 'error' : 'action'} />
+                                    </InputAdornment>
                                 }
-                                {alertMessage && (
+                                sx={theme => ({
+                                    bgcolor: theme.palette.sand.four,
+                                    borderRadius: 1,
+                                    color: theme.palette.main.dark_blue,
+                                    mt: 1,
+                                    px: 1,
+                                })}
+                                type='email'
+                                value={email}
+                            />
+                            <FormFields
+                                autoComplete='current-password'
+                                endAdornment={
+                                    <IconButton
+                                        onClick={handleShowPassword}
+                                        onMouseDown={handleMouseDownPassword}
+                                        onMouseUp={handleMouseUpPassword}>
+                                        {showPassword && showConfirmPassword ?
+                                        <VisibilityOffIcon /> : <VisibilityIcon />}
+                                    </IconButton>
+                                }
+                                error={!!formError && /password/i.test(formError)}
+                                helperText={/password/i.test(formError) ? formError : ''}
+                                label='Password'
+                                onChange={e => {
+                                    setPassword(e.target.value);
+                                    setFormError('');
+                                    setAlertMessage('');
+                                }}
+                                startAdornment={
+                                    <InputAdornment
+                                        position="start"
+                                        sx={{
+                                            borderRight: '2px solid #39434b',
+                                            pr: .7,
+                                        }}>
+                                        <KeyIcon color={alertMessage ? 'error' : 'action'} />
+                                    </InputAdornment>
+                                }
+                                sx={theme => ({
+                                    bgcolor: theme.palette.sand.four,
+                                    borderRadius: 1,
+                                    color: theme.palette.main.dark_blue,
+                                    mt: 1,
+                                    px: 1,
+                                })}
+                                type={showPassword ? 'text' : 'password'}
+                                value={password}
+                            />
+                            <FormFields
+                                endAdornment={
+                                    <IconButton
+                                        onClick={handleShowPassword}
+                                        onMouseDown={handleMouseDownPassword}
+                                        onMouseUp={handleMouseUpPassword}>
+                                        {showConfirmPassword && showPassword ?
+                                        <VisibilityOffIcon /> : <VisibilityIcon />}
+                                    </IconButton>
+                                }
+                                error={!!confirmError}
+                                helperText={confirmError}
+                                label='Confirm Password'
+                                onChange={e => {
+                                    setConfirmPassword(e.target.value);
+                                    setFormError('');
+                                    setAlertMessage('');
+                                }}
+                                startAdornment={
+                                    <InputAdornment
+                                        position="start"
+                                        sx={{
+                                            borderRight: '2px solid #39434b',
+                                            pr: .7,
+                                        }}>
+                                        <KeyIcon color={alertMessage ? 'error' : 'action'} />
+                                    </InputAdornment>
+                                }
+                                sx={theme => ({
+                                    bgcolor: theme.palette.sand.four,
+                                    borderRadius: 1,
+                                    color: theme.palette.main.dark_blue,
+                                    mt: 1,
+                                    px: 1,
+                                })}
+                                type={showConfirmPassword ? 'text' : 'password'}
+                                value={confirmPassword}
+                            />
+                            {formError &&
+                                !formError.toLowerCase().includes("email") && !formError.toLowerCase().includes("password") && (
                                     <Alert
                                         severity={alertSeverity}
                                         sx={{ fontWeight: 700, mb: 3 }}
                                         variant='filled'>
                                             {alertMessage}
                                     </Alert>
-                                )}
-                                <Button
-                                    loading={loading}
-                                    loadingPosition="center"
-                                    onClick={handleSignup}
-                                    sx={theme => ({
-                                        alignSelf: 'center',
-                                        bgcolor: theme.palette.main.dark_blue,
-                                        borderRadius: 6,
-                                        color: theme.palette.sand.one,
-                                        fontSize: '1rem',
-                                        fontWeight: 700,
-                                        mt: 3,
-                                        textTransform: "none",
-                                        width: '30%',
-                                        '&.MuiButton-loading': {
-                                            bgcolor: alpha(theme.palette.main.dark_blue, 0.38)
-                                        }
-                                    })}
-                                    variant='contained'>
-                                    {authIsLoading
-                                        ? <CircularProgress size={24} color='inherit' />
-                                        : 'Sign Up'
+                                )
+                            }
+                            {alertMessage && (
+                                <Alert
+                                    severity={alertSeverity}
+                                    sx={{ fontWeight: 700, mb: 3 }}
+                                    variant='filled'>
+                                        {alertMessage}
+                                </Alert>
+                            )}
+                            <Button
+                                loading={loading}
+                                loadingPosition="center"
+                                onClick={handleSignup}
+                                sx={theme => ({
+                                    alignSelf: 'center',
+                                    bgcolor: theme.palette.main.dark_blue,
+                                    borderRadius: 6,
+                                    color: theme.palette.sand.one,
+                                    fontSize: '1rem',
+                                    fontWeight: 700,
+                                    mt: 3,
+                                    textTransform: "none",
+                                    width: '30%',
+                                    '&.MuiButton-loading': {
+                                        bgcolor: alpha(theme.palette.main.dark_blue, 0.38)
                                     }
-                                </Button>
-                                <Link
-                                    href='/signin'
-                                    sx={theme => ({
+                                })}
+                                variant='contained'>
+                                {authIsLoading
+                                    ? <CircularProgress size={24} color='inherit' />
+                                    : 'Sign Up'
+                                }
+                            </Button>
+                            <Link
+                                href='/signin'
+                                sx={theme => ({
+                                    color: theme.palette.main.dark_blue,
+                                    fontWeight: 600,
+                                    position: 'relative',
+                                    textDecoration: 'none',
+                                    textDecorationColor: theme.palette.main.dark_blue,
+                                    transition: 'color 200ms ease-in-out',
+                                    '&::after': {
+                                        content: '""',
+                                        position: 'absolute',
+                                        left: 105,
+                                        bottom: -2,
+                                        width: '50%',
+                                        height: '2px',
+                                        bgcolor: theme.palette.main.dark_blue,
+                                        transform: 'scaleX(0)',
+                                        transformOrigin: 'center',
+                                        transition: 'transform 200ms ease-in-out',
+                                    },
+                                    '&:hover': {
                                         color: theme.palette.main.dark_blue,
-                                        fontWeight: 600,
-                                        position: 'relative',
-                                        textDecoration: 'none',
-                                        textDecorationColor: theme.palette.main.dark_blue,
-                                        transition: 'color 200ms ease-in-out',
-                                        '&::after': {
-                                            content: '""',
-                                            position: 'absolute',
-                                            left: 105,
-                                            bottom: -2,
-                                            width: '50%',
-                                            height: '2px',
-                                            bgcolor: theme.palette.main.dark_blue,
-                                            transform: 'scaleX(0)',
-                                            transformOrigin: 'center',
-                                            transition: 'transform 200ms ease-in-out',
-                                        },
-                                        '&:hover': {
-                                            color: theme.palette.main.dark_blue,
-                                        },
-                                        '&:hover::after': {
-                                            transform: 'scaleX(1)',
-                                        },
-                                    })}>
-                                    Already have an account?
-                                </Link>
-                            </Stack>
-                        </Box>
-                    {/* </Grid> */}
+                                    },
+                                    '&:hover::after': {
+                                        transform: 'scaleX(1)',
+                                    },
+                                })}>
+                                Already have an account?
+                            </Link>
+                        </Stack>
+                    </Box>
+                    {/* Report Issue component */}
+                    <ReportIssue />
                 </Grid>
             </Container>
         </Box>

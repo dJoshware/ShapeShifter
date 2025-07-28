@@ -25,6 +25,7 @@ import { useAuth } from "../../lib/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import FormFields from "../../components/FormFields";
 import RecoverPassword from "../../components/RecoverPassword";
+import ReportIssue from "../../components/ReportIssue";
 
 export default function LoginPage() {
 
@@ -151,190 +152,185 @@ export default function LoginPage() {
                     alignItems='center'
                     container
                     justifyContent={isMobile || isTablet ? 'center' : 'space-evenly'}
-                    sx={theme => ({
-                        p: 4,
-                    })}>
-                    {/* <Grid size={{ xs: 10, sm: 8, md: 6, lg: 4 }}> */}
-                        <Box
-                            // alignItems='center'
-                            // autoComplete='off'
-                            // component='form'
-                            // noValidate
+                    sx={{ p: 4 }}>
+                    <Box
+                        sx={theme => ({
+                            bgcolor: theme.palette.sand.four,
+                            borderRadius: 2,
+                            boxShadow: 3,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            mb: 2,
+                            p: isMobile || isTablet ? 3 : 4,
+                            width: '100%'
+                        })}
+                        textAlign='center'>
+                        <Typography
+                            component='h3'
+                            display='block'
                             sx={theme => ({
-                                bgcolor: theme.palette.sand.four,
-                                borderRadius: 2,
-                                boxShadow: 3,
-                                display: 'flex',
-                                flexDirection: 'column',
-                                p: isMobile || isTablet ? 3 : 4,
-                                width: '100%'
-                            })}
-                            textAlign='center'>
-                            <Typography
-                                component='h3'
-                                display='block'
-                                sx={theme => ({
-                                    color: theme.palette.sand.one,
-                                    fontSize:
-                                        isMobile || isTablet ?
-                                        theme.typography.mobile.h3.fontSize :
-                                        theme.typography.desktop.h3.fontSize,
-                                    fontWeight: 700,
-                                    mb: 2,
-                                })}>
-                                The Shape Shifter
-                            </Typography>
-                            <Stack spacing={3}>
-                                <FormFields
-                                    autoComplete='email'
-                                    error={!!formError && /email/i.test(formError)}
-                                    helperText={/email/i.test(formError) ? formError : ''}
-                                    label='Email'
-                                    onChange={e => {
-                                        setEmail(e.target.value);
-                                        setFormError('');
-                                        setAlertMessage('');
-                                    }}
-                                    startAdornment={
-                                        <InputAdornment
-                                            position="start"
-                                            sx={{
-                                                borderRight: '2px solid #39434b',
-                                                pr: .8,
-                                            }}>
-                                            <PersonIcon color={alertMessage ? 'error' : 'action'} />
-                                        </InputAdornment>
-                                    }
-                                    sx={theme => ({
-                                        bgcolor: theme.palette.sand.four,
-                                        borderRadius: 1,
-                                        color: theme.palette.main.dark_blue,
-                                        mt: 1,
-                                        px: 1,
-                                    })}
-                                    type='email'
-                                    value={email}
-                                />
-                                <FormFields
-                                    autoComplete='current-password'
-                                    endAdornment={
-                                        <IconButton
-                                            onClick={() => setShowPassword(s => !s)}
-                                            onMouseDown={handleMouseDownPassword}
-                                            onMouseUp={handleMouseUpPassword}>
-                                            {showPassword ?
-                                            <VisibilityOffIcon /> : <VisibilityIcon />}
-                                        </IconButton>
-                                    }
-                                    error={!!formError && /password/i.test(formError)}
-                                    helperText={/password/i.test(formError) ? formError : ''}
-                                    label='Password'
-                                    onChange={e => {
-                                        setPassword(e.target.value);
-                                        setFormError('');
-                                        setAlertMessage('');
-                                    }}
-                                    startAdornment={
-                                        <InputAdornment
-                                            position="start"
-                                            sx={{
-                                                borderRight: '2px solid #39434b',
-                                                pr: .7,
-                                            }}>
-                                            <KeyIcon color={alertMessage ? 'error' : 'action'} />
-                                        </InputAdornment>
-                                    }
-                                    sx={theme => ({
-                                        bgcolor: theme.palette.sand.four,
-                                        borderRadius: 1,
-                                        color: theme.palette.main.dark_blue,
-                                        mt: 1,
-                                        px: 1,
-                                    })}
-                                    type={showPassword ? 'text' : 'password'}
-                                    value={password}
-                                />
-                                {formError &&
-                                    !formError.toLowerCase().includes("email") && !formError.toLowerCase().includes("password") && (
-                                        <Alert
-                                            severity={alertSeverity}
-                                            sx={{ fontWeight: 700, mb: 3 }}
-                                            variant='filled'>
-                                                {alertMessage}
-                                        </Alert>
-                                    )
+                                color: theme.palette.sand.one,
+                                fontSize:
+                                    isMobile || isTablet ?
+                                    theme.typography.mobile.h3.fontSize :
+                                    theme.typography.desktop.h3.fontSize,
+                                fontWeight: 700,
+                                mb: 2,
+                            })}>
+                            The Shape Shifter
+                        </Typography>
+                        <Stack spacing={3}>
+                            <FormFields
+                                autoComplete='email'
+                                error={!!formError && /email/i.test(formError)}
+                                helperText={/email/i.test(formError) ? formError : ''}
+                                label='Email'
+                                onChange={e => {
+                                    setEmail(e.target.value);
+                                    setFormError('');
+                                    setAlertMessage('');
+                                }}
+                                startAdornment={
+                                    <InputAdornment
+                                        position="start"
+                                        sx={{
+                                            borderRight: '2px solid #39434b',
+                                            pr: .8,
+                                        }}>
+                                        <PersonIcon color={alertMessage ? 'error' : 'action'} />
+                                    </InputAdornment>
                                 }
-                                {alertMessage && (
+                                sx={theme => ({
+                                    bgcolor: theme.palette.sand.four,
+                                    borderRadius: 1,
+                                    color: theme.palette.main.dark_blue,
+                                    mt: 1,
+                                    px: 1,
+                                })}
+                                type='email'
+                                value={email}
+                            />
+                            <FormFields
+                                autoComplete='current-password'
+                                endAdornment={
+                                    <IconButton
+                                        onClick={() => setShowPassword(s => !s)}
+                                        onMouseDown={handleMouseDownPassword}
+                                        onMouseUp={handleMouseUpPassword}>
+                                        {showPassword ?
+                                        <VisibilityOffIcon /> : <VisibilityIcon />}
+                                    </IconButton>
+                                }
+                                error={!!formError && /password/i.test(formError)}
+                                helperText={/password/i.test(formError) ? formError : ''}
+                                label='Password'
+                                onChange={e => {
+                                    setPassword(e.target.value);
+                                    setFormError('');
+                                    setAlertMessage('');
+                                }}
+                                startAdornment={
+                                    <InputAdornment
+                                        position="start"
+                                        sx={{
+                                            borderRight: '2px solid #39434b',
+                                            pr: .7,
+                                        }}>
+                                        <KeyIcon color={alertMessage ? 'error' : 'action'} />
+                                    </InputAdornment>
+                                }
+                                sx={theme => ({
+                                    bgcolor: theme.palette.sand.four,
+                                    borderRadius: 1,
+                                    color: theme.palette.main.dark_blue,
+                                    mt: 1,
+                                    px: 1,
+                                })}
+                                type={showPassword ? 'text' : 'password'}
+                                value={password}
+                            />
+                            {formError &&
+                                !formError.toLowerCase().includes("email") && !formError.toLowerCase().includes("password") && (
                                     <Alert
                                         severity={alertSeverity}
                                         sx={{ fontWeight: 700, mb: 3 }}
                                         variant='filled'>
                                             {alertMessage}
                                     </Alert>
-                                )}
-                                <Button
-                                    loading={loading}
-                                    loadingPosition="center"
-                                    disabled={authIsLoading}
-                                    onClick={handleSignin}
+                                )
+                            }
+                            {alertMessage && (
+                                <Alert
+                                    severity={alertSeverity}
+                                    sx={{ fontWeight: 700, mb: 3 }}
+                                    variant='filled'>
+                                        {alertMessage}
+                                </Alert>
+                            )}
+                            <Button
+                                loading={loading}
+                                loadingPosition="center"
+                                disabled={authIsLoading}
+                                onClick={handleSignin}
+                                sx={theme => ({
+                                    alignSelf: 'center',
+                                    bgcolor: theme.palette.main.dark_blue,
+                                    borderRadius: 6,
+                                    color: theme.palette.sand.one,
+                                    fontSize: '1rem',
+                                    fontWeight: 700,
+                                    textTransform: "none",
+                                    width: '30%',
+                                    '&.MuiButton-loading': {
+                                        bgcolor: alpha(theme.palette.main.dark_blue, 0.38)
+                                    }
+                                })}
+                                variant='contained'>
+                                {authIsLoading
+                                    ? <CircularProgress size={24} color='inherit' />
+                                    : 'Sign In'
+                                }
+                            </Button>
+                            <Grid
+                                container
+                                justifyContent='space-between'>
+                                <RecoverPassword />
+                                <Link
+                                    href='/create-account'
                                     sx={theme => ({
                                         alignSelf: 'center',
-                                        bgcolor: theme.palette.main.dark_blue,
-                                        borderRadius: 6,
-                                        color: theme.palette.sand.one,
-                                        fontSize: '1rem',
-                                        fontWeight: 700,
-                                        textTransform: "none",
-                                        width: '30%',
-                                        '&.MuiButton-loading': {
-                                            bgcolor: alpha(theme.palette.main.dark_blue, 0.38)
-                                        }
-                                    })}
-                                    variant='contained'>
-                                    {authIsLoading
-                                        ? <CircularProgress size={24} color='inherit' />
-                                        : 'Sign In'
-                                    }
-                                </Button>
-                                <Grid
-                                    container
-                                    justifyContent='space-between'>
-                                    <RecoverPassword />
-                                    <Link
-                                        href='/create-account'
-                                        sx={theme => ({
-                                            alignSelf: 'center',
+                                        color: theme.palette.main.dark_blue,
+                                        fontWeight: 600,
+                                        position: 'relative',
+                                        textDecoration: 'none',
+                                        textDecorationColor: theme.palette.main.dark_blue,
+                                        transition: 'color 200ms ease-in-out',
+                                        '&::after': {
+                                            bgcolor: theme.palette.main.dark_blue,
+                                            bottom: -3,
+                                            content: '""',
+                                            height: '2px',
+                                            left: 0,
+                                            position: 'absolute',
+                                            transform: 'scaleX(0)',
+                                            transformOrigin: 'center',
+                                            transition: 'transform 200ms ease-in-out',
+                                            width: '100%',
+                                        },
+                                        '&:hover': {
                                             color: theme.palette.main.dark_blue,
-                                            fontWeight: 600,
-                                            position: 'relative',
-                                            textDecoration: 'none',
-                                            textDecorationColor: theme.palette.main.dark_blue,
-                                            transition: 'color 200ms ease-in-out',
-                                            '&::after': {
-                                                bgcolor: theme.palette.main.dark_blue,
-                                                bottom: -3,
-                                                content: '""',
-                                                height: '2px',
-                                                left: 0,
-                                                position: 'absolute',
-                                                transform: 'scaleX(0)',
-                                                transformOrigin: 'center',
-                                                transition: 'transform 200ms ease-in-out',
-                                                width: '100%',
-                                            },
-                                            '&:hover': {
-                                                color: theme.palette.main.dark_blue,
-                                            },
-                                            '&:hover::after': {
-                                                transform: 'scaleX(1)',
-                                            },
-                                        })}>
-                                        Don't have an account?
-                                    </Link>
-                                </Grid>
-                            </Stack>
-                        </Box>
-                    {/* </Grid> */}
+                                        },
+                                        '&:hover::after': {
+                                            transform: 'scaleX(1)',
+                                        },
+                                    })}>
+                                    Don't have an account?
+                                </Link>
+                            </Grid>
+                        </Stack>
+                    </Box>
+                    {/* Report Issue component */}
+                    <ReportIssue />
                 </Grid>
             </Container>
         </Box>
