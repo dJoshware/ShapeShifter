@@ -42,6 +42,8 @@ export default function PasswordResetPage() {
     const [loading, setLoading] = React.useState(false);
     const [alertMessage, setAlertMessage] = React.useState("");
     const [alertSeverity, setAlertSeverity] = React.useState("success");
+    // State for completion of password update
+    const [isResetComplete, setResetComplete] = React.useState(false);
 
     // Password validator for account registration
     function isValidPassword(password) {
@@ -97,6 +99,19 @@ export default function PasswordResetPage() {
         setLoading(true);
         if (!validateForm) return;
 
+        // Wait for Supabase session to initialize
+        let attempts = 0;
+        while (!session && attempts < 10) {
+            await new Promise(resolve => setTimeout(resolve, 300));
+            attempts++;
+        }
+        if (!session) {
+            setLoading(false);
+            setAlertSeverity('error');
+            setAlertMessage('Session not found. Please refresh the page and try again.');
+            return;
+        }
+
         const { error } = await supabase.auth.updateUser({
             password: confirmPassword
         });
@@ -107,13 +122,18 @@ export default function PasswordResetPage() {
             setAlertSeverity('error');
             setAlertMessage(error.message || 'Could not update your password. Please try again.');
         } else {
+            // Set custom variable in browser's Storage
+            localStorage.setItem("passwordResetDone", "true");
             setLoading(false);
             setAlertSeverity('success');
-            setAlertMessage('Password successfully updated! You may return to practice...');
-            await new Promise(() => setTimeout(
-                router.push('/'),
-                3000
-            ));
+            setAlertMessage('Password successfully updated! Returning to practice...');
+            setResetComplete(true);
+            setTimeout(() => {
+                if (window.opener) {
+                    // Tab was opened with window.open
+                    window.close(); // May be blocked on Chrome, not others
+                }
+            }, 3000);
         }
     };
 
@@ -145,6 +165,35 @@ export default function PasswordResetPage() {
                 <CircularProgress sx={theme => ({
                     color: theme.palette.main.dark_blue,
                 })}/>
+            </Box>
+        );
+    }
+
+    // If user has set a new password, render a Close Window button
+    if (isResetComplete) {
+        return (
+            <Box
+                sx={theme => ({
+                    alignItems: 'center',
+                    bgcolor: theme.palette.sand.one,
+                    display: 'flex',
+                    height: '100vh',
+                    justifyContent: 'center',
+                })}>
+                <Button
+                    onClick={() => {
+                        localStorage.removeItem('passwordResetDone');
+                        window.close();
+                    }}
+                    sx={theme => ({
+                        bgcolor: theme.palette.main.dark_blue,
+                        borderRadius: 6,
+                        color: theme.palette.sand.one,
+                        textTransform: 'none',
+                    })}
+                    variant="contained">
+                    Close this window
+                </Button>
             </Box>
         );
     }

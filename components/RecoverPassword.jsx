@@ -4,6 +4,7 @@ import * as React from 'react';
 import {
     Alert,
     Button,
+    CircularProgress,
     Dialog,
     DialogActions,
     DialogContent,
@@ -204,7 +205,8 @@ export default function RecoverPassword() {
                             maxWidth: 'fit-content',
                             px: 2,
                             textTransform: 'none',
-                        })}>
+                        })}
+                        variant='contained'>
                         Cancel
                     </Button>
                     <Button
@@ -223,7 +225,8 @@ export default function RecoverPassword() {
                             maxWidth: 'fit-content',
                             px: 2,
                             textTransform: 'none',
-                        })}>
+                        })}
+                        variant='contained'>
                         Submit
                     </Button>
                 </DialogActions>
