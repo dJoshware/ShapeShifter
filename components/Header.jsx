@@ -61,13 +61,14 @@ export default function Header({ difficulty, onDifficultyChange }) {
     // State for Menu and Drawer
     const [anchorEl, setAnchorEl] = React.useState(null);
     const [formError, setFormError] = React.useState("");
-    const [alertMessage, setAlertMessage] = React.useState(""); // PROLLY WON'T NEED
-    const [alertSeverity, setAlertSeverity] = React.useState("success"); // PROLLY WON'T NEED
     // State for user settings 
     const [drawerOpen, setDrawerOpen] = React.useState(false);
     const [signoutLoading, setSignOutLoading] = React.useState(false);
     // State for paywall modal
     const [paywallOpen, setPaywallOpen] = React.useState(false);
+    const [paywallLoading, setPaywallLoading] = React.useState(false);
+    const [paywallAlertMessage, setPaywallAlertMessage] = React.useState("");
+    const [paywallAlertSeverity, setPaywallAlertSeverity] = React.useState("success");
     // Track whether they have Pro
     const [hasPro, setHasPro] = React.useState(false);
 
@@ -87,25 +88,29 @@ export default function Header({ difficulty, onDifficultyChange }) {
 
     // Handles desire to subscribe -> Stripe checkout form
     const handleSubscribe = async () => {
+        setPaywallLoading(true);
         try {
             const res = await fetch('/api/checkout', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    // Shape Shifter Pro (Monthly)
-                    priceId: 'price_1RihQHCZkkV2izhoCk3Jzylj',
-                }),
             });
 
-            if (!res.ok) throw new Error('Failed to create checkout session.');
+            if (!res.ok) {
+                setPaywallLoading(false);
+                setPaywallAlertSeverity('error');
+                setPaywallAlertMessage('Failed to create checkout session.');
+            }
 
             const { url } = await res.json();
             router.push(url);
 
         } catch (err) {
             console.error(err);
-            alert('Unable to start checkout. Please try again.');
+            setPaywallLoading(false);
+            setPaywallAlertSeverity('error');
+            setPaywallAlertMessage('Unable to start checkout. Please try again.');
         }
+        setPaywallLoading(false);
     };
 
     // Menu button handlers
@@ -540,7 +545,7 @@ export default function Header({ difficulty, onDifficultyChange }) {
                                     variant='contained'>
                                     Save
                                 </Button>
-                                {formError &&
+                                {/* {formError &&
                                     !formError.toLowerCase().includes("email") && (
                                         <Alert
                                             severity={alertSeverity}
@@ -549,7 +554,7 @@ export default function Header({ difficulty, onDifficultyChange }) {
                                                 {alertMessage}
                                         </Alert>
                                     )
-                                }
+                                } */}
                                 {updateEmailAlertMessage && (
                                     <Alert
                                         severity={updateEmailAlertSeverity}
@@ -677,7 +682,7 @@ export default function Header({ difficulty, onDifficultyChange }) {
                                     </Button>
                                 </Box>
                                 {/* Alerts outside of FlexBox to show below row */}
-                                {formError &&
+                                {/* {formError &&
                                     !formError.toLowerCase().includes("password") && (
                                         <Alert
                                         severity={alertSeverity}
@@ -686,7 +691,7 @@ export default function Header({ difficulty, onDifficultyChange }) {
                                                 {alertMessage}
                                         </Alert>
                                     )
-                                }
+                                } */}
                                 {updatePasswordAlertMessage && (
                                     <Alert
                                         severity={updatePasswordAlertSeverity}
@@ -725,7 +730,7 @@ export default function Header({ difficulty, onDifficultyChange }) {
                                 }
                             })}
                             variant='contained'>
-                            {authIsLoading
+                            {signoutLoading
                                 ? <CircularProgress size={24} color='inherit' />
                                 : 'Sign Out'
                             }
@@ -762,6 +767,8 @@ export default function Header({ difficulty, onDifficultyChange }) {
 
             {/* Paywall modal */}
             <Dialog
+                fullWidth
+                maxWidth='md'
                 open={paywallOpen}
                 onClose={() => setPaywallOpen(false)}>
                 <DialogTitle
@@ -817,6 +824,9 @@ export default function Header({ difficulty, onDifficultyChange }) {
                         Cancel
                     </Button>
                     <Button
+                        disabled={paywallLoading}
+                        loading={paywallLoading}
+                        loadingPosition='center'
                         onClick={handleSubscribe}
                         sx={theme => ({
                             bgcolor: theme.palette.main.dark_blue,
