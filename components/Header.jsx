@@ -37,6 +37,7 @@ import KeyIcon from '@mui/icons-material/Key';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import DeleteIcon from '@mui/icons-material/Delete';
+import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../lib/contexts/AuthContext';
 import FormFields from './FormFields';
@@ -69,6 +70,8 @@ export default function Header({ difficulty, onDifficultyChange }) {
     const [paywallLoading, setPaywallLoading] = React.useState(false);
     const [paywallAlertMessage, setPaywallAlertMessage] = React.useState("");
     const [paywallAlertSeverity, setPaywallAlertSeverity] = React.useState("success");
+    // State for subscription modal
+    const [subscriptionOpen, setSubscriptionOpen] = React.useState(false);
     // Track whether they have Pro
     const [hasPro, setHasPro] = React.useState(false);
 
@@ -706,6 +709,25 @@ export default function Header({ difficulty, onDifficultyChange }) {
                             {/* Color Theme */}
 
                             {/* Manage Subscription */}
+                            <Button
+                            onClick={() => setSubscriptionOpen(true)}
+                            startIcon={<ManageAccountsIcon />}
+                            sx={theme => ({
+                                bgcolor: theme.palette.main.dark_blue,
+                                borderRadius: 6,
+                                color: theme.palette.sand.one,
+                                fontSize: '1rem',
+                                fontWeight: 600,
+                                mb: 3,
+                                textTransform: "none",
+                                width: 'fit-content',
+                                '&.MuiButton-loading': {
+                                    bgcolor: alpha(theme.palette.main.dark_blue, 0.38)
+                                }
+                            })}
+                            variant='contained'>
+                            Manage Subscription
+                        </Button>
                         
                         </Stack>
                         
@@ -730,10 +752,7 @@ export default function Header({ difficulty, onDifficultyChange }) {
                                 }
                             })}
                             variant='contained'>
-                            {signoutLoading
-                                ? <CircularProgress size={24} color='inherit' />
-                                : 'Sign Out'
-                            }
+                            Sign Out
                         </Button>
                         {/* Delete account */}
                         <Button
@@ -756,10 +775,7 @@ export default function Header({ difficulty, onDifficultyChange }) {
                                 }
                             })}
                             variant='contained'>
-                            {deleteLoading
-                                ? <CircularProgress size={24} color='inherit' />
-                                : 'Delete Account'
-                            }
+                            Delete Account
                         </Button>
                     </Box>
                 </Drawer>
@@ -802,6 +818,14 @@ export default function Header({ difficulty, onDifficultyChange }) {
                         })}>
                         Subscribe to <strong>Shape Shifter Pro</strong> and get unlimited access to all levels, plus exclusive features and content
                     </Typography>
+                    {paywallAlertMessage && (
+                        <Alert
+                            severity={paywallAlertSeverity}
+                            sx={{ fontWeight: 700, mb: 3, mt: 1 }}
+                            variant='filled'>
+                                {paywallAlertMessage}
+                        </Alert>
+                    )}
                 </DialogContent>
                 <DialogActions
                     sx={theme => ({
@@ -841,6 +865,69 @@ export default function Header({ difficulty, onDifficultyChange }) {
                             textTransform: 'none',
                         })}>
                         Subscribe
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* Manage Subscription modal */}
+            <Dialog
+                fullWidth
+                maxWidth='md'
+                open={subscriptionOpen}
+                onClose={() => setSubscriptionOpen(false)}
+                slotProps={{
+                    paper: {
+                        sx: theme => ({
+                            bgcolor: theme.palette.sand.one,
+                        })
+                    }
+                }}>
+                <DialogTitle
+                    sx={theme => ({
+                        bgcolor: theme.palette.sand.one,
+                        borderBottom: `2px solid ${theme.palette.main.dark_blue}`,
+                        color: theme.palette.main.dark_blue,
+                        fontSize:
+                            isMobile || isTablet ?
+                            theme.typography.mobile.h3.fontSize :
+                            theme.typography.desktop.h3.fontSize,
+                        fontWeight: 700,
+                        mb: 2,
+                    })}>
+                    Manage Subscription
+                </DialogTitle>
+                <DialogContent
+                    sx={theme => ({
+                        bgcolor: theme.palette.sand.one,
+                    })}>
+                    <script async src="https://js.stripe.com/v3/pricing-table.js"></script>
+                    <stripe-pricing-table
+                        pricing-table-id="prctbl_1Rq3P9CZkkV2izhom9KluEIL"
+                        publishable-key="pk_test_51RihF6CZkkV2izhohRDlBQ169XLw7msXmb77bEEnoqn5ZKbL2cfHiyR590A73h0jjemyLt07IPQJ7JA8XTBUqiii00mnFz6H88">
+                    </stripe-pricing-table>
+                </DialogContent>
+                <DialogActions
+                    sx={theme => ({
+                        bgcolor: theme.palette.sand.one,
+                        justifyContent: 'center',
+                        mt: -5,
+                    })}>
+                    <Button
+                        onClick={() => setSubscriptionOpen(false)}
+                        sx={theme => ({
+                            bgcolor: theme.palette.main.dark_blue,
+                            borderRadius: 6,
+                            color: theme.palette.sand.one,
+                            fontSize:
+                                isMobile || isTablet ?
+                                theme.typography.mobile.h6.fontSize :
+                                theme.typography.desktop.h6.fontSize,
+                            maxWidth: 'fit-content',
+                            mb: 1,
+                            px: 2,
+                            textTransform: 'none',
+                        })}>
+                        Cancel
                     </Button>
                 </DialogActions>
             </Dialog>
