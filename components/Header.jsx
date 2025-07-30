@@ -23,6 +23,8 @@ import {
     MenuItem,
     SpeedDial,
     Stack,
+    ToggleButton,
+    ToggleButtonGroup,
     Tooltip,
     Typography,
     useMediaQuery,
@@ -70,6 +72,10 @@ export default function Header({ difficulty, onDifficultyChange }) {
     const [paywallLoading, setPaywallLoading] = React.useState(false);
     const [paywallAlertMessage, setPaywallAlertMessage] = React.useState("");
     const [paywallAlertSeverity, setPaywallAlertSeverity] = React.useState("success");
+    // Stripe price IDs
+    const MONTHLY_PRICE_ID = 'price_1Rq2dfCZkkV2izhosAj5Ht4q';
+    const YEARLY_PRICE_ID = 'price_1RihSyCZkkV2izhopZLHzrOa';
+    const [priceId, setPriceId] = React.useState(MONTHLY_PRICE_ID);
     // State for subscription modal
     const [subscriptionOpen, setSubscriptionOpen] = React.useState(false);
     // Track whether they have Pro
@@ -96,6 +102,10 @@ export default function Header({ difficulty, onDifficultyChange }) {
             const res = await fetch('/api/checkout', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email,
+                    priceId,
+                }),
             });
 
             if (!res.ok) {
@@ -806,18 +816,67 @@ export default function Header({ difficulty, onDifficultyChange }) {
                         bgcolor: theme.palette.sand.one,
                     })}>
                     <Typography
-                        sx={theme => ({
-                            mb: 1,
-                            mt: 3,
-                        })}>
+                        sx={{ mb: 1, mt: 3 }}>
                         Want access to <em><strong>Advanced shapes</strong></em> and <em><strong>Draw Mode</strong></em>?
                     </Typography>
                     <Typography
-                        sx={theme => ({
-                            mb: 1,
-                        })}>
+                        sx={{ mb: 1 }}>
                         Subscribe to <strong>Shape Shifter Pro</strong> and get unlimited access to all levels, plus exclusive features and content
                     </Typography>
+                    {/* User's pricing options */}
+                    <ToggleButtonGroup
+                        exclusive
+                        fullWidth
+                        onChange={(e, newId) => {
+                            if (newId !== null) setPriceId(newId);
+                        }}
+                        sx={theme => ({
+                            my: 2,
+                        })}
+                        value={priceId}>
+                        <ToggleButton
+                            sx={theme => ({
+                                border: `2px solid ${theme.palette.main.dark_blue}`,
+                                bgcolor: theme.palette.sand.two,
+                                textTransform: 'none',
+                                '&.Mui-selected': {
+                                    bgcolor: theme.palette.sand.four,
+                                    color: theme.palette.sand.one,
+                                    fontSize: 18,
+                                    fontWeight: 600,
+                                    '&:hover': {
+                                        bgcolor: theme.palette.sand.three,
+                                    }
+                                },
+                                '&:hover': {
+                                    bgcolor: theme.palette.sand.one,
+                                }
+                            })}
+                            value={MONTHLY_PRICE_ID}>
+                            Monthly - $14.99/mo
+                        </ToggleButton>
+                        <ToggleButton
+                            sx={theme => ({
+                                border: `2px solid ${theme.palette.main.dark_blue}`,
+                                bgcolor: theme.palette.sand.two,
+                                textTransform: 'none',
+                                '&.Mui-selected': {
+                                    bgcolor: theme.palette.sand.four,
+                                    color: theme.palette.sand.one,
+                                    fontSize: 18,
+                                    fontWeight: 600,
+                                    '&:hover': {
+                                        bgcolor: theme.palette.sand.three,
+                                    }
+                                },
+                                '&:hover': {
+                                    bgcolor: theme.palette.sand.one,
+                                }
+                            })}
+                            value={YEARLY_PRICE_ID}>
+                            Yearly - $149.99/yr
+                        </ToggleButton>
+                    </ToggleButtonGroup>
                     {paywallAlertMessage && (
                         <Alert
                             severity={paywallAlertSeverity}
@@ -851,7 +910,7 @@ export default function Header({ difficulty, onDifficultyChange }) {
                         disabled={paywallLoading}
                         loading={paywallLoading}
                         loadingPosition='center'
-                        onClick={handleSubscribe}
+                        onClick={() => handleSubscribe()}
                         sx={theme => ({
                             bgcolor: theme.palette.main.dark_blue,
                             borderRadius: 6,
