@@ -24,7 +24,7 @@ import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { useAuth } from "../../lib/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import FormFields from "../../components/FormFields";
-import ReportIssue from "../../components/ReportIssue";
+import SubmitFeedback from "../../components/SubmitFeedback";
 import { isValidPassword } from "../../lib/API";
 
 export default function SignUpPage() {
@@ -400,8 +400,8 @@ export default function SignUpPage() {
                             </Link>
                         </Stack>
                     </Box>
-                    {/* Report Issue component */}
-                    <ReportIssue />
+                    {/* Submit Feedback component */}
+                    <SubmitFeedback />
                 </Grid>
             </Container>
         </Box>

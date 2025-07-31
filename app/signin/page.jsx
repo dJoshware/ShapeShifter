@@ -25,7 +25,7 @@ import { useAuth } from "../../lib/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import FormFields from "../../components/FormFields";
 import RecoverPassword from "../../components/RecoverPassword";
-import ReportIssue from "../../components/ReportIssue";
+import SubmitFeedback from "../../components/SubmitFeedback";
 
 export default function LoginPage() {
 
@@ -326,8 +326,8 @@ export default function LoginPage() {
                             </Grid>
                         </Stack>
                     </Box>
-                    {/* Report Issue component */}
-                    <ReportIssue />
+                    {/* Submit Feedback component */}
+                    <SubmitFeedback />
                 </Grid>
             </Container>
         </Box>

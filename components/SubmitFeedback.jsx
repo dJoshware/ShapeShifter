@@ -24,7 +24,7 @@ import EmailIcon from '@mui/icons-material/Email';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import ClearIcon from '@mui/icons-material/Clear';
 
-export default function ReportIssue() {
+export default function Feedback() {
     const theme = useTheme();
     // Media queries
     const isMobile = useMediaQuery(theme.breakpoints.down('sm')); // <600px
@@ -42,10 +42,10 @@ export default function ReportIssue() {
     const [messageAlertMessage, setMessageAlertMessage] = React.useState('');
     const [messageAlertSeverity, setMessageAlertSeverity] = React.useState('success');
     // Submission
-    const [reportAlertMessage, setReportAlertMessage] = React.useState('');
-    const [reportAlertSeverity, setReportAlertSeverity] = React.useState('success');
-    const [reportLoading, setReportLoading] = React.useState(false);
-    const [reportIssueOpen, setReportIssueOpen] = React.useState(false);
+    const [feedbackAlertMessage, setFeedbackAlertMessage] = React.useState('');
+    const [feedbackAlertSeverity, setFeedbackAlertSeverity] = React.useState('success');
+    const [feedbackLoading, setFeedbackLoading] = React.useState(false);
+    const [feedbackOpen, setFeedbackOpen] = React.useState(false);
 
     const [files, setFiles] = React.useState([]);
     const handleFileUpload = e => {
@@ -53,17 +53,24 @@ export default function ReportIssue() {
         setFiles(fileList);
         console.log('Uploaded files:', fileList);
     }
-    const handleSubmitReport = async () => {
-        setReportLoading(true);
+    const handleSubmitFeedback = async () => {
+        setFeedbackLoading(true);
 
         if (!email || !message) {
-            if (!email) setEmailError('This field is required.');
-            if (!message) setMessageError('This field is required.');
+            if (!email) {
+                setEmailAlertSeverity('error');
+                setEmailError('This field is required.');
+            }
+            if (!message) {
+                setMessageAlertSeverity('error');
+                setMessageError('This field is required.');
+            }
             return;
         }
 
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!email.trim() || !emailRegex.test(email)) {
+            setEmailAlertSeverity('error');
             setEmailError("Please enter a valid email address.");
             return;
         }
@@ -84,25 +91,25 @@ export default function ReportIssue() {
             const result = await res.json();
 
             if (result.success) {
-                setReportLoading(false);
-                setReportAlertSeverity('success');
-                setReportAlertMessage('Report submitted successfully! Please double check your spam folder.');
+                setFeedbackLoading(false);
+                setFeedbackAlertSeverity('success');
+                setFeedbackAlertMessage('Feedback submitted successfully! Please double check your spam folder.');
                 setEmail('');
                 setMessage('');
                 setFiles([]);
                 await new Promise(resolve => setTimeout(resolve, 3000));
-                setReportIssueOpen(false);
+                setFeedbackOpen(false);
             } else {
-                setReportLoading(false);
-                setReportAlertSeverity('error');
-                setReportAlertMessage('Something went wrong. Please try again.');    
+                setFeedbackLoading(false);
+                setFeedbackAlertSeverity('error');
+                setFeedbackAlertMessage('Something went wrong. Please try again.');    
             }
             
         } catch (err) {
-            console.error('Report submission error:', err);
-            setReportLoading(false);
-            setReportAlertSeverity('error');
-            setReportAlertMessage('An error occurred while submitting the report.');
+            console.error('Feedback submission error:', err);
+            setFeedbackLoading(false);
+            setFeedbackAlertSeverity('error');
+            setFeedbackAlertMessage('An error occurred while submitting feedback.');
         }
     };
 
@@ -122,7 +129,7 @@ export default function ReportIssue() {
     return (
         <>
             <Button
-                onClick={() => setReportIssueOpen(true)}
+                onClick={() => setFeedbackOpen(true)}
                 sx={theme => ({
                     alignSelf: 'center',
                     bgcolor: 'transparent',
@@ -153,18 +160,18 @@ export default function ReportIssue() {
                         transform: 'scaleX(1)',
                     },
                 })}>
-                {reportLoading
+                {feedbackLoading
                     ? <CircularProgress size={24} color='inherit' />
-                    : 'Report an issue'
+                    : 'Submit Feedback'
                 }
             </Button>
 
-            {/* Report Issue modal */}
+            {/* Submit Feedback modal */}
             <Dialog
                 fullWidth
                 maxWidth='sm'
-                open={reportIssueOpen}
-                onClose={() => setReportIssueOpen(false)}
+                open={feedbackOpen}
+                onClose={() => setFeedbackOpen(false)}
                 slotProps={{
                     paper: {
                         sx: theme => ({
@@ -185,7 +192,7 @@ export default function ReportIssue() {
                         pb: 2,
                         textAlign: 'center',
                     })}>
-                    Tell us what happened
+                    Submit feedback
                 </DialogTitle>
                 <DialogContent
                     sx={theme => ({
@@ -250,7 +257,7 @@ export default function ReportIssue() {
                         autoComplete='off'
                         error={!!messageError && /message/i.test(messageError)}
                         helperText={/message/i.test(messageError) ? messageError : ''}
-                        label='Describe the problem'
+                        label='Provide a description'
                         minRows={5}
                         multiline={true}
                         onChange={e => {
@@ -295,7 +302,7 @@ export default function ReportIssue() {
                             fontWeight: 600,
                             mb: 2,
                         })}>
-                        Provide a screenshot if issue is visible
+                        Provide a screenshot, if visible
                     </Typography>
                     <Stack direction='row' spacing={1}>
                         <Button
@@ -349,12 +356,12 @@ export default function ReportIssue() {
                             ))}
                         </Box>
                     )}
-                    {reportAlertMessage && (
+                    {feedbackAlertMessage && (
                         <Alert
-                            severity={reportAlertSeverity}
+                            severity={feedbackAlertSeverity}
                             sx={{ fontWeight: 700, mt: 2 }}
                             variant='filled'>
-                                {reportAlertMessage}
+                                {feedbackAlertMessage}
                         </Alert>
                     )}
                 </DialogContent>
@@ -364,7 +371,7 @@ export default function ReportIssue() {
                         mb: 1,
                     })}>
                     <Button
-                        onClick={() => setReportIssueOpen(false)}
+                        onClick={() => setFeedbackOpen(false)}
                         sx={theme => ({
                             bgcolor: theme.palette.main.dark_blue,
                             borderRadius: 6,
@@ -380,10 +387,10 @@ export default function ReportIssue() {
                         Cancel
                     </Button>
                     <Button
-                        disabled={reportLoading}
-                        loading={reportLoading}
+                        disabled={feedbackLoading}
+                        loading={feedbackLoading}
                         loadingPosition='center'
-                        onClick={handleSubmitReport}
+                        onClick={handleSubmitFeedback}
                         sx={theme => ({
                             bgcolor: theme.palette.main.dark_blue,
                             borderRadius: 6,

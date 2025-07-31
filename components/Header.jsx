@@ -43,7 +43,7 @@ import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../lib/contexts/AuthContext';
 import FormFields from './FormFields';
-import ReportIssue from './ReportIssue';
+import SubmitFeedback from './SubmitFeedback';
 import {
     deleteAccount,
     updateEmail,
@@ -493,8 +493,8 @@ export default function Header({ difficulty, onDifficultyChange }) {
                             })}>
                             {user && `User ID: ${user.id}`}
                         </Typography>
-                        {/* Report Issue component */}
-                        <ReportIssue />
+                        {/* Submit Feedback component */}
+                        <SubmitFeedback />
                         <Stack
                             height='100%'
                             spacing={3}>
