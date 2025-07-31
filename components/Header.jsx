@@ -986,7 +986,7 @@ export default function Header({ difficulty, onDifficultyChange }) {
                             px: 2,
                             textTransform: 'none',
                         })}>
-                        Cancel
+                        Close
                     </Button>
                 </DialogActions>
             </Dialog>
