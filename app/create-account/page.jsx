@@ -21,11 +21,12 @@ import PersonIcon from '@mui/icons-material/Person';
 import KeyIcon from '@mui/icons-material/Key';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import ClearIcon from '@mui/icons-material/Clear';
 import { useAuth } from "../../lib/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import FormFields from "../../components/FormFields";
 import SubmitFeedback from "../../components/SubmitFeedback";
-import { isValidPassword } from "../../lib/API";
+import { emailRegex, isValidPassword } from "../../lib/API";
 
 export default function SignUpPage() {
 
@@ -51,7 +52,6 @@ export default function SignUpPage() {
         setFormError("");
         setAlertMessage("");
 
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!email.trim() || !emailRegex.test(email)) {
             setFormError("Please enter a valid email address.");
             return false;
@@ -71,17 +71,15 @@ export default function SignUpPage() {
         return true;
     };
 
-    // Password default preventers
-    const handleMouseDownPassword = e => e.preventDefault();
-    const handleMouseUpPassword = e => e.preventDefault();
     const handleShowPassword = () => {
         setShowPassword(s => !s);
         setShowConfirmPassword(s => !s);
     };
 
     // Sign Up handler
-    const handleSignup = async () => {
-        if (!validateForm) return;
+    const handleSignup = async e => {
+        e.preventDefault();
+        if (!validateForm()) return;
         
         if (!isValidPassword(password)) {
             setFormError(
@@ -90,21 +88,27 @@ export default function SignUpPage() {
             return;
         }
         
-        // You can pass additional data for your public 'settings'/'subscriptions' table if needed
-        // const additionalData = { full_name: "Some Name" };
-        const { error } = await signUp(email, password /* additional data */);
+        try {
+            // You can pass additional data for your public 'settings'/'subscriptions' table if needed
+            // const additionalData = { full_name: "Some Name" };
+            const { error } = await signUp(email, password /* additional data */);
 
-        if (error) {
-            setAlertSeverity("error");
-            // Check for specific public table insert error if you customized the error object in AuthProvider
-            if (error.publicTableInsertError) {
-                setAlertMessage(`Registration succeeded but profile creation failed: ${error.publicTableInsertError.message}. Please contact support.`);
+            if (error) {
+                setAlertSeverity("error");
+                // Check for specific public table insert error if you customized the error object in AuthProvider
+                if (error.publicTableInsertError) {
+                    setAlertMessage(`Registration succeeded but profile creation failed: ${error.publicTableInsertError.message}. Please contact support.`);
+                } else {
+                    setAlertMessage(error.message || "Failed to register. The email might already be in use or the password is too weak.");
+                }
             } else {
-                setAlertMessage(error.message || "Failed to register. The email might already be in use or the password is too weak.");
+                setAlertSeverity("success");
+                setAlertMessage("Registration successful! Redirecting...");
             }
-        } else {
-            setAlertSeverity("success");
-            setAlertMessage("Registration successful! Redirecting...");
+        } catch (err) {
+            console.error('Account creation error:', err);
+            setAlertSeverity("error");
+            setAlertMessage('Could not create your account. Please try again.');
         }
     };
 
@@ -224,6 +228,15 @@ export default function SignUpPage() {
                         <Stack spacing={3}>
                             <FormFields
                                 autoComplete='email'
+                                endAdornment={
+                                    email ? (
+                                        <IconButton
+                                            onClick={() => setEmail('')}
+                                            onMouseDown={e => e.preventDefault()}>
+                                            <ClearIcon />
+                                        </IconButton>
+                                    ) : null
+                                }
                                 error={!!formError && /email/i.test(formError)}
                                 helperText={/email/i.test(formError) ? formError : ''}
                                 label='Email'
@@ -232,6 +245,7 @@ export default function SignUpPage() {
                                     setFormError('');
                                     setAlertMessage('');
                                 }}
+                                required={true}
                                 startAdornment={
                                     <InputAdornment
                                         position="start"
@@ -256,8 +270,8 @@ export default function SignUpPage() {
                                 endAdornment={
                                     <IconButton
                                         onClick={handleShowPassword}
-                                        onMouseDown={handleMouseDownPassword}
-                                        onMouseUp={handleMouseUpPassword}>
+                                        onMouseDown={e => e.preventDefault()}
+                                        onMouseUp={e => e.preventDefault()}>
                                         {showPassword && showConfirmPassword ?
                                         <VisibilityOffIcon /> : <VisibilityIcon />}
                                     </IconButton>
@@ -270,6 +284,7 @@ export default function SignUpPage() {
                                     setFormError('');
                                     setAlertMessage('');
                                 }}
+                                required={true}
                                 startAdornment={
                                     <InputAdornment
                                         position="start"
@@ -294,8 +309,8 @@ export default function SignUpPage() {
                                 endAdornment={
                                     <IconButton
                                         onClick={handleShowPassword}
-                                        onMouseDown={handleMouseDownPassword}
-                                        onMouseUp={handleMouseUpPassword}>
+                                        onMouseDown={e => e.preventDefault()}
+                                        onMouseUp={e => e.preventDefault()}>
                                         {showConfirmPassword && showPassword ?
                                         <VisibilityOffIcon /> : <VisibilityIcon />}
                                     </IconButton>
@@ -308,6 +323,7 @@ export default function SignUpPage() {
                                     setFormError('');
                                     setAlertMessage('');
                                 }}
+                                required={true}
                                 startAdornment={
                                     <InputAdornment
                                         position="start"
@@ -365,6 +381,7 @@ export default function SignUpPage() {
                                         bgcolor: alpha(theme.palette.main.dark_blue, 0.38)
                                     }
                                 })}
+                                type='submit'
                                 variant='contained'>
                                 Sign Up
                             </Button>

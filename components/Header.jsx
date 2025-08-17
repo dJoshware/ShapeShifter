@@ -40,6 +40,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
+import ClearIcon from '@mui/icons-material/Clear';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../lib/contexts/AuthContext';
 import FormFields from './FormFields';
@@ -49,6 +50,7 @@ import {
     updateEmail,
     updatePassword,
     updateSettings,
+    emailRegex,
     isValidPassword
 } from '../lib/API';
 
@@ -145,9 +147,6 @@ export default function Header({ difficulty, onDifficultyChange }) {
         setSignOutLoading(false);
     };
     const handleCloseDrawer = () => setDrawerOpen(false);
-    // Password default preventers
-    const handleMouseDownPassword = e => e.preventDefault();
-    const handleMouseUpPassword = e => e.preventDefault();
 
     // CRUD OPERATIONS
 
@@ -182,7 +181,6 @@ export default function Header({ difficulty, onDifficultyChange }) {
     const [updateEmailLoading, setUpdateEmailLoading] = React.useState(false);
     const handleUpdateEmail = async () => {
         setUpdateEmailLoading(true);
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         try {
             // Basic format check
             if (!email || !emailRegex.test(email)) {
@@ -502,9 +500,27 @@ export default function Header({ difficulty, onDifficultyChange }) {
                             <Grid container>
                                 <FormFields
                                     autoComplete='email'
+                                    endAdornment={
+                                        email ? (
+                                            <IconButton
+                                                onClick={() => setEmail('')}
+                                                onMouseDown={e => e.preventDefault()}>
+                                                <ClearIcon />
+                                            </IconButton>
+                                        ) : null
+                                    }
                                     error={!!formError && /email/i.test(formError)}
                                     helperText={/email/i.test(formError) ? formError : ''}
                                     label='Change email'
+                                    onBlur={() => {
+                                        const trimmed = email.trim();
+                                        const original = user?.email?.trim();
+
+                                        // If empty or invalid, reset to original
+                                        if (!trimmed || trimmed === original || !emailRegex.test(trimmed)) {
+                                            setEmail(original);
+                                        }
+                                    }}
                                     onChange={e => {
                                         setEmail(e.target.value);
                                         setFormError('');
@@ -555,19 +571,10 @@ export default function Header({ difficulty, onDifficultyChange }) {
                                             bgcolor: alpha(theme.palette.main.dark_blue, 0.38)
                                         }
                                     })}
+                                    type='submit'
                                     variant='contained'>
                                     Save
                                 </Button>
-                                {/* {formError &&
-                                    !formError.toLowerCase().includes("email") && (
-                                        <Alert
-                                            severity={alertSeverity}
-                                            sx={{ fontWeight: 700, my: 1 }}
-                                            variant='filled'>
-                                                {alertMessage}
-                                        </Alert>
-                                    )
-                                } */}
                                 {updateEmailAlertMessage && (
                                     <Alert
                                         severity={updateEmailAlertSeverity}
@@ -584,8 +591,8 @@ export default function Header({ difficulty, onDifficultyChange }) {
                                     endAdornment={
                                         <IconButton
                                             onClick={handleShowPassword}
-                                            onMouseDown={handleMouseDownPassword}
-                                            onMouseUp={handleMouseUpPassword}>
+                                            onMouseDown={e => e.preventDefault()}
+                                            onMouseUp={e => e.preventDefault()}>
                                             {showPassword && showConfirmPassword ?
                                             <VisibilityOffIcon /> : <VisibilityIcon />}
                                         </IconButton>
@@ -637,8 +644,8 @@ export default function Header({ difficulty, onDifficultyChange }) {
                                         endAdornment={
                                             <IconButton
                                                 onClick={handleShowPassword}
-                                                onMouseDown={handleMouseDownPassword}
-                                                onMouseUp={handleMouseUpPassword}>
+                                                onMouseDown={e => e.preventDefault()}
+                                                onMouseUp={e => e.preventDefault()}>
                                                 {showConfirmPassword && showPassword ?
                                                 <VisibilityOffIcon /> : <VisibilityIcon />}
                                             </IconButton>
@@ -690,6 +697,7 @@ export default function Header({ difficulty, onDifficultyChange }) {
                                                 bgcolor: alpha(theme.palette.main.dark_blue, 0.38)
                                             }
                                         })}
+                                        type='submit'
                                         variant='contained'>
                                         Save
                                     </Button>

@@ -53,7 +53,8 @@ export default function Feedback() {
         setFiles(fileList);
         console.log('Uploaded files:', fileList);
     }
-    const handleSubmitFeedback = async () => {
+    const handleSubmitFeedback = async e => {
+        e.preventDefault();
         setFeedbackLoading(true);
 
         if (!email || !message) {
@@ -204,6 +205,15 @@ export default function Feedback() {
                     })}>
                     {/* Email */}
                     <FormFields
+                        endAdornment={
+                            email ? (
+                                <IconButton
+                                    onClick={() => setEmail('')}
+                                    onMouseDown={e => e.preventDefault()}>
+                                    <ClearIcon />
+                                </IconButton>
+                            ) : null
+                        }
                         error={!!emailError && /email/i.test(emailError)}
                         helperText={/email/i.test(emailError) ? emailError : ''}
                         label='Your email'
@@ -255,6 +265,16 @@ export default function Feedback() {
                     {/* Description of error */}
                     <FormFields
                         autoComplete='off'
+                        endAdornment={
+                            message ? (
+                                <IconButton
+                                    onClick={() => setMessage('')}
+                                    onMouseDown={e => e.preventDefault()}
+                                    sx={{ mt: 'auto' }}>
+                                    <ClearIcon />
+                                </IconButton>
+                            ) : null
+                        }
                         error={!!messageError && /message/i.test(messageError)}
                         helperText={/message/i.test(messageError) ? messageError : ''}
                         label='Provide a description'
@@ -330,11 +350,6 @@ export default function Feedback() {
                                 multiple
                             />
                         </Button>
-                        {files.length > 0 && (
-                            <IconButton onClick={() => setFiles([])}>
-                                <ClearIcon sx={{ fontSize: 24 }} />
-                            </IconButton>
-                        )}
                     </Stack>
                     {files.length > 0 && (
                         <Box
@@ -345,13 +360,16 @@ export default function Feedback() {
                             }}>
                             {files.map(file => (
                                 <Typography
-                                    key={file.name}
+                                    key={file.name + file.lastModified}
                                     sx={theme => ({
                                         color: theme.palette.main.dark_blue,
                                         mt: 1,
                                         wordBreak: 'break-word',
                                     })}>
                                     {file.name}
+                                    <IconButton onClick={() => setFiles(prev => prev.filter(f => f.name !== file.name || f.lastModified !== file.lastModified))}>
+                                        <ClearIcon sx={{ fontSize: 24 }} />
+                                    </IconButton>
                                 </Typography>
                             ))}
                         </Box>

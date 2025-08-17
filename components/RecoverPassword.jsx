@@ -4,11 +4,11 @@ import * as React from 'react';
 import {
     Alert,
     Button,
-    CircularProgress,
     Dialog,
     DialogActions,
     DialogContent,
     DialogTitle,
+    IconButton,
     InputAdornment,
     useMediaQuery,
     useTheme,
@@ -17,6 +17,7 @@ import createClient from '../lib/supabaseBrowserClient';
 import FormFields from './FormFields';
 import EmailIcon from '@mui/icons-material/Email';
 import ClearIcon from '@mui/icons-material/Clear';
+import { emailRegex } from '../lib/API';
 
 export default function RecoverPassword() {
     const theme = useTheme();
@@ -33,12 +34,12 @@ export default function RecoverPassword() {
     const [formError, setFormError] = React.useState('');
     const [alertMessage, setAlertMessage] = React.useState("");
     const [alertSeverity, setAlertSeverity] = React.useState("success");
-    const handlePasswordReset = async () => {
+    const handlePasswordReset = async e => {
+        e.preventDefault();
         setRecoveryLoading(true);
         setFormError('');
         setAlertMessage('');
 
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!formEmail.trim() || !emailRegex.test(formEmail)) {
             setFormError("Please enter a valid email address.");
             return;
@@ -136,6 +137,16 @@ export default function RecoverPassword() {
                     })}>
                     {/* Email */}
                     <FormFields
+                    autoComplete='email'
+                        endAdornment={
+                            formEmail ? (
+                                <IconButton
+                                    onClick={() => setFormEmail('')}
+                                    onMouseDown={e => e.preventDefault()}>
+                                    <ClearIcon />
+                                </IconButton>
+                            ) : null
+                        }
                         error={!!formError && /email/i.test(formError)}
                         helperText={/email/i.test(formError) ? formError : ''}
                         label='Where should we send your recovery link?'
@@ -164,6 +175,7 @@ export default function RecoverPassword() {
                             width: '100%',
                         })}
                         type='email'
+                        value={formEmail}
                     />
                     {formError &&
                         !formError.toLowerCase().includes("email") && (
@@ -226,6 +238,7 @@ export default function RecoverPassword() {
                             px: 2,
                             textTransform: 'none',
                         })}
+                        type='submit'
                         variant='contained'>
                         Submit
                     </Button>

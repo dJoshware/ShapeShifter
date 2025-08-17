@@ -21,11 +21,13 @@ import PersonIcon from '@mui/icons-material/Person';
 import KeyIcon from '@mui/icons-material/Key';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import ClearIcon from '@mui/icons-material/Clear';
 import { useAuth } from "../../lib/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import FormFields from "../../components/FormFields";
 import RecoverPassword from "../../components/RecoverPassword";
 import SubmitFeedback from "../../components/SubmitFeedback";
+import { emailRegex } from "../../lib/API";
 
 export default function LoginPage() {
 
@@ -48,7 +50,6 @@ export default function LoginPage() {
         setFormError("");
         setAlertMessage("");
 
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!email.trim() || !emailRegex.test(email)) {
             setFormError("Please enter a valid email address.");
             return false;
@@ -60,13 +61,10 @@ export default function LoginPage() {
         return true;
     };
 
-    // Password handlers
-    const handleMouseDownPassword = e => e.preventDefault();
-    const handleMouseUpPassword = e => e.preventDefault();
-
-    const handleSignin = async () => {
+    const handleSignin = async e => {
+        e.preventDefault();
         setLoading(true);
-        if (!validateForm) return;
+        if (!validateForm()) return;
 
         const { error } = await signIn(email, password);
 
@@ -182,6 +180,15 @@ export default function LoginPage() {
                         <Stack spacing={3}>
                             <FormFields
                                 autoComplete='email'
+                                endAdornment={
+                                    email ? (
+                                        <IconButton
+                                            onClick={() => setEmail('')}
+                                            onMouseDown={e => e.preventDefault()}>
+                                            <ClearIcon />
+                                        </IconButton>
+                                    ) : null
+                                }
                                 error={!!formError && /email/i.test(formError)}
                                 helperText={/email/i.test(formError) ? formError : ''}
                                 label='Email'
@@ -190,6 +197,7 @@ export default function LoginPage() {
                                     setFormError('');
                                     setAlertMessage('');
                                 }}
+                                required={true}
                                 startAdornment={
                                     <InputAdornment
                                         position="start"
@@ -215,8 +223,8 @@ export default function LoginPage() {
                                 endAdornment={
                                     <IconButton
                                         onClick={() => setShowPassword(s => !s)}
-                                        onMouseDown={handleMouseDownPassword}
-                                        onMouseUp={handleMouseUpPassword}>
+                                        onMouseDown={e => e.preventDefault()}
+                                        onMouseUp={e => e.preventDefault()}>
                                         {showPassword ?
                                         <VisibilityOffIcon /> : <VisibilityIcon />}
                                     </IconButton>
@@ -229,6 +237,7 @@ export default function LoginPage() {
                                     setFormError('');
                                     setAlertMessage('');
                                 }}
+                                required={true}
                                 startAdornment={
                                     <InputAdornment
                                         position="start"
@@ -285,6 +294,7 @@ export default function LoginPage() {
                                         bgcolor: alpha(theme.palette.main.dark_blue, 0.38)
                                     }
                                 })}
+                                type="submit"
                                 variant='contained'>
                                 Sign In
                             </Button>
