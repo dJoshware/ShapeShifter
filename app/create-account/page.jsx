@@ -49,23 +49,26 @@ export default function SignUpPage() {
     const [alertSeverity, setAlertSeverity] = React.useState("success");
 
     const validateForm = () => {
-        setFormError("");
         setAlertMessage("");
 
         if (!email.trim() || !emailRegex.test(email)) {
-            setFormError("Please enter a valid email address.");
+            setAlertSeverity("error");
+            setAlertMessage("Please enter a valid email address.");
             return false;
         }
         if (!password.trim()) {
-            setFormError("Please enter a password.");
+            setAlertSeverity("error");
+            setAlertMessage("Please enter a password.");
             return false;
         }
         if (!confirmPassword.trim()) {
-            setFormError("Please confirm your password.");
+            setAlertSeverity("error");
+            setAlertMessage("Please confirm your password.");
             return false;
         }
         if (password !== confirmPassword) {
-            setFormError("Passwords do not match.");
+            setAlertSeverity("error");
+            setAlertMessage("Passwords do not match.");
             return false;
         }
         return true;
@@ -82,25 +85,25 @@ export default function SignUpPage() {
         if (!validateForm()) return;
         
         if (!isValidPassword(password)) {
-            setFormError(
+            setAlertSeverity("error");
+            setAlertMessage(
                 "Password must be at least 8 characters and include uppercase, lowercase, a number, and a symbol (!@#$%^&-_.?/)."
             );
             return;
         }
         
         try {
-            // You can pass additional data for your public 'settings'/'subscriptions' table if needed
             // const additionalData = { full_name: "Some Name" };
             const { error } = await signUp(email, password /* additional data */);
 
             if (error) {
                 setAlertSeverity("error");
-                // Check for specific public table insert error if you customized the error object in AuthProvider
-                if (error.publicTableInsertError) {
-                    setAlertMessage(`Registration succeeded but profile creation failed: ${error.publicTableInsertError.message}. Please contact support.`);
-                } else {
-                    setAlertMessage(error.message || "Failed to register. The email might already be in use or the password is too weak.");
-                }
+                setAlertMessage(
+                    error.message.includes("User already registered")
+                    ? "Email already registered"
+                    : error.message
+                    // : "Please enter a valid email address"
+                );
             } else {
                 setAlertSeverity("success");
                 setAlertMessage("Registration successful! Redirecting...");
@@ -344,7 +347,7 @@ export default function SignUpPage() {
                                 type={showConfirmPassword ? 'text' : 'password'}
                                 value={confirmPassword}
                             />
-                            {formError &&
+                            {/* {formError &&
                                 !formError.toLowerCase().includes("email") && !formError.toLowerCase().includes("password") && (
                                     <Alert
                                         severity={alertSeverity}
@@ -353,7 +356,7 @@ export default function SignUpPage() {
                                             {alertMessage}
                                     </Alert>
                                 )
-                            }
+                            } */}
                             {alertMessage && (
                                 <Alert
                                     severity={alertSeverity}
