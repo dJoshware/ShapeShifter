@@ -186,11 +186,12 @@ export default function Header({ difficulty, onDifficultyChange }) {
             if (!email || !emailRegex.test(email)) {
                 throw new Error('Invalid email format');
             }
-            // If new email is samee as current
+            // If new email is same as current
             if (email === user.email) {
                 throw new Error('New email must be different from current email');
             }
             await updateEmail(email);
+            setEmail(email);
             setUpdateEmailLoading(false);
             setUpdateEmailAlertSeverity("success");
             setUpdateEmailAlertMessage("Your email has been updated!");
@@ -271,7 +272,7 @@ export default function Header({ difficulty, onDifficultyChange }) {
 
     // On user load/change, prefill user's email form field in settings
     React.useEffect(() => {
-        if (user?.email) setEmail(user.email);
+        if (user) setEmail(user.email);
     }, [user?.email]);
 
     // If auth is loading and we don't have a user yet, show a general loader
@@ -1055,8 +1056,6 @@ export default function Header({ difficulty, onDifficultyChange }) {
                     })}>
                     <Button
                         disabled={deleteLoading}
-                        loading={deleteLoading}
-                        loadingPosition='center'
                         onClick={() => {
                             setDeleteAlertMessage('');
                             setDeleteAccountOpen(false);
