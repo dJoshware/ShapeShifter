@@ -1,46 +1,54 @@
 import { NextResponse } from 'next/server';
-import { createServerClient } from '../../../lib/supabaseServerClient';
+import { createServClient } from '../../../lib/supabaseServerClient';
 import { createClient as createAdmin } from '@supabase/supabase-js';
 
 export async function PUT(req) {
     try {
         // Supabase client
-        const supabase = createServerClient();
-        // Extract JWT from request headers
+        const supabase = await createServClient();
+        // Get user from Bearer token or fall back to cookie session
         const authHeader = req.headers.get('authorization');
-        if (!authHeader) {
-            return NextResponse.json({
-                error: 'No authorization header',
-                details: 'Authorization header is missing'
-            }, { status: 401 });
+        let userId = null;
+
+        if (authHeader?.startsWith('Bearer ')) {
+            const token = authHeader.slice(7);
+            const { data, error} = await supabase.auth.getUser(token);
+            if (error || !data?.user) {
+                return NextResponse.json({
+                    error: 'Unauthorized',
+                    details: error?.message ?? 'No authorized user found'
+                }, { status: 401 });
+            }
+            userId = data.user.id;
+        } else {
+            const { data, error } = await supabase.auth.getUser();
+            if (error || !data?.user) {
+                return NextResponse.json({
+                    error: 'Unauthorized',
+                    details: error?.message ?? 'No authorized user found'
+                }, { status: 401 });
+            }
+            userId = data.user.id;
         }
-        // Get user from Supabase using JWT
-        const token = authHeader.replace('Bearer ', '');
-        const { data: { user }, error: getUserError } = await supabase.auth.getUser(token);
-        console.log('User:', user);
-        if (getUserError || !user) {
-            return NextResponse.json({
-                error: 'Unauthorized',
-                details: getUserError?.message || 'No authorized user found'
-            }, { status: 401 });
-        }
+
         // Parse request body
         const { password } = await req.json();
-        console.log('Password:', password);
         if (!password) {
             return NextResponse.json({
                 error: 'Invalid Request',
                 details: 'Password is required'
             }, { status: 400 });
         }
+
         // Create Supabase admin client
-        const adminSupabase = createAdmin(
+        const admin = createAdmin(
             process.env.NEXT_PUBLIC_SUPABASE_URL,
             process.env.SUPABASE_SERVICE_ROLE_KEY,
         );
+        
         // Update email in auth.users
-        const { data: updateData, error: updateError } = await adminSupabase.auth.admin.updateUserById(
-            user.id,
+        const { data: updateData, error: updateError } = await admin.auth.admin.updateUserById(
+            userId,
             { password: password }
         );
         console.log('Update Data:', updateData);
