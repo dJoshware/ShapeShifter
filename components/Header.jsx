@@ -793,7 +793,8 @@ export default function Header({ difficulty, onDifficultyChange }) {
                             {/* Manage Subscription */}
                             {hasPro ? (
                                 <Button
-                                    onClick={() => setSubscriptionOpen(true)}
+                                    // onClick={() => setSubscriptionOpen(true)}
+                                    href='https://billing.stripe.com/p/login/test_00waEW7qCfxn9JW60Y3ks00'
                                     startIcon={<ManageAccountsIcon />}
                                     sx={theme => ({
                                         bgcolor: theme.palette.main.dark_blue,
