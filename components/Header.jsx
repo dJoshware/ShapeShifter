@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { createBrowserClient } from '@supabase/ssr';
 import {
     alpha,
     Alert,
@@ -56,6 +57,10 @@ import {
 
 export default function Header({ difficulty, onDifficultyChange }) {
 
+    const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    );
     const { user, signOut, authIsLoading } = useAuth();
     const router = useRouter();
     const theme = useTheme();
@@ -74,10 +79,8 @@ export default function Header({ difficulty, onDifficultyChange }) {
     const [paywallLoading, setPaywallLoading] = React.useState(false);
     const [paywallAlertMessage, setPaywallAlertMessage] = React.useState("");
     const [paywallAlertSeverity, setPaywallAlertSeverity] = React.useState("success");
-    // Stripe price IDs
-    const MONTHLY_PRICE_ID = 'price_1Rq2dfCZkkV2izhosAj5Ht4q';
-    const YEARLY_PRICE_ID = 'price_1RihSyCZkkV2izhopZLHzrOa';
-    const [priceId, setPriceId] = React.useState(MONTHLY_PRICE_ID);
+    // Subscription plan
+    const [plan, setPlan] = React.useState('monthly'); // 'monthly' || 'yearly'
     // State for subscription modal
     const [subscriptionOpen, setSubscriptionOpen] = React.useState(false);
     // Track whether they have Pro
@@ -87,6 +90,13 @@ export default function Header({ difficulty, onDifficultyChange }) {
     const lockedLevels = hasPro ? [] : ['Advanced', 'Draw Mode'];
     // User avatar (maybe)
     const userInitial = user?.email ? user.email.charAt(0).toUpperCase() : 'U';
+
+    // Function to check user's subscription status to unlock full access tabs
+    function isPro(sub) {
+        if (!sub) return false;
+        const active = new Set(['active', 'trialing', 'past_due']);
+        return active.has(sub.status) && new Date(sub.current_period_end) > new Date();
+    };
 
     // Handles level changes; Dialog pop up if locked level
     const handleClick = level => {
@@ -106,7 +116,7 @@ export default function Header({ difficulty, onDifficultyChange }) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     email,
-                    priceId,
+                    plan,
                 }),
             });
 
@@ -274,6 +284,59 @@ export default function Header({ difficulty, onDifficultyChange }) {
     React.useEffect(() => {
         if (user) setEmail(user.email);
     }, [user?.email]);
+
+    // 
+    React.useEffect(() => {
+        let channel;
+        let authSub;
+
+        async function wire(uid) {
+            // Initial fetch
+            const { data } = await supabase
+                .from('subscriptions')
+                .select('status,current_period_end')
+                .eq('user_id', uid)
+                .maybeSingle();
+
+            setHasPro(isPro(data));
+
+            // Realtime updates
+            channel = supabase
+                .channel('subs')
+                .on(
+                    'postgres_changes',
+                    { event: '*', schema: 'public', table: 'subscriptions', filter: `user_id=eq.${uid}`},
+                    payload => {
+                        const row = payload.new || payload.old || null;
+                        setHasPro(isPro(row));
+                    }
+                )
+                .subscribe();
+        }
+
+        (async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            const uid = session?.user?.id;
+            if (uid) await wire(uid);
+
+            // Update if user signs in/out or switches accounts
+            authSub = supabase.auth.onAuthStateChange((_evt, newSession) => {
+                const newUid = newSession?.user?.id;
+                if (!newUid) {
+                    setHasPro(false);
+                    if (channel) supabase.removeChannel(channel);
+                    return;
+                }
+                if (channel) supabase.removeChannel(channel);
+                wire(newUid);
+            }).data.subscription;
+        })();
+
+        return () => {
+            if (channel) supabase.removeChannel(channel);
+            authSub?.unsubscribe();
+        };
+    }, []);
 
     // If auth is loading and we don't have a user yet, show a general loader
     if (authIsLoading && !user) {
@@ -728,25 +791,27 @@ export default function Header({ difficulty, onDifficultyChange }) {
                             {/* Color Theme */}
 
                             {/* Manage Subscription */}
-                            <Button
-                            onClick={() => setSubscriptionOpen(true)}
-                            startIcon={<ManageAccountsIcon />}
-                            sx={theme => ({
-                                bgcolor: theme.palette.main.dark_blue,
-                                borderRadius: 6,
-                                color: theme.palette.sand.one,
-                                fontSize: '1rem',
-                                fontWeight: 600,
-                                mb: 3,
-                                textTransform: "none",
-                                width: 'fit-content',
-                                '&.MuiButton-loading': {
-                                    bgcolor: alpha(theme.palette.main.dark_blue, 0.38)
-                                }
-                            })}
-                            variant='contained'>
-                            Manage Subscription
-                        </Button>
+                            {hasPro ? (
+                                <Button
+                                    onClick={() => setSubscriptionOpen(true)}
+                                    startIcon={<ManageAccountsIcon />}
+                                    sx={theme => ({
+                                        bgcolor: theme.palette.main.dark_blue,
+                                        borderRadius: 6,
+                                        color: theme.palette.sand.one,
+                                        fontSize: '1rem',
+                                        fontWeight: 600,
+                                        mb: 3,
+                                        textTransform: "none",
+                                        width: 'fit-content',
+                                        '&.MuiButton-loading': {
+                                            bgcolor: alpha(theme.palette.main.dark_blue, 0.38)
+                                        }
+                                    })}
+                                    variant='contained'>
+                                    Manage Subscription
+                                </Button>
+                            ) : null}
                         
                         </Stack>
                         
@@ -837,12 +902,12 @@ export default function Header({ difficulty, onDifficultyChange }) {
                         exclusive
                         fullWidth
                         onChange={(e, newId) => {
-                            if (newId !== null) setPriceId(newId);
+                            if (newId !== null) setPlan(newId);
                         }}
                         sx={theme => ({
                             my: 2,
                         })}
-                        value={priceId}>
+                        value={plan}>
                         <ToggleButton
                             sx={theme => ({
                                 border: `2px solid ${theme.palette.main.dark_blue}`,
@@ -861,7 +926,7 @@ export default function Header({ difficulty, onDifficultyChange }) {
                                     bgcolor: theme.palette.sand.one,
                                 }
                             })}
-                            value={MONTHLY_PRICE_ID}>
+                            value={'monthly'}>
                             Monthly - $14.99/mo
                         </ToggleButton>
                         <ToggleButton
@@ -882,7 +947,7 @@ export default function Header({ difficulty, onDifficultyChange }) {
                                     bgcolor: theme.palette.sand.one,
                                 }
                             })}
-                            value={YEARLY_PRICE_ID}>
+                            value={'yearly'}>
                             Yearly - $149.99/yr
                         </ToggleButton>
                     </ToggleButtonGroup>
