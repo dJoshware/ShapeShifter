@@ -389,45 +389,53 @@ export default function Header({ difficulty, onDifficultyChange }) {
                                     display='inline-flex'
                                     key={level}
                                     position='relative'>
-                                    <Button
-                                        onClick={() => handleClick(level)}
-                                        sx={theme => ({
-                                            bgcolor:
-                                                difficulty === level ?
-                                                theme.palette.sand.four :
-                                                theme.palette.sand.one,
-                                            color:
-                                                isLocked ? alpha(theme.palette.main.dark_blue, 0.38) :
-                                                difficulty === level ?
-                                                theme.palette.sand.one :
-                                                theme.palette.main.dark_blue,
-                                            fontWeight:
-                                                difficulty === level ? 600 : 400,
-                                            textTransform: 'none',
-                                            })}>
-                                        {level}
-                                    </Button>
+                                    <Tooltip
+                                        disableInteractive
+                                        disableFocusListener={!isLocked}
+                                        disableHoverListener={!isLocked}
+                                        disableTouchListener={!isLocked}
+                                        placement='top'
+                                        title={isLocked ? 'Subscribe to unlock' : ''}>
+                                        <span>
+                                            <Button
+                                                onClick={() => handleClick(level)}
+                                                sx={theme => ({
+                                                    bgcolor:
+                                                        difficulty === level ?
+                                                        theme.palette.sand.four :
+                                                        theme.palette.sand.one,
+                                                    color:
+                                                        isLocked ? alpha(theme.palette.main.dark_blue, 0.38) :
+                                                        difficulty === level ?
+                                                        theme.palette.sand.one :
+                                                        theme.palette.main.dark_blue,
+                                                    fontWeight:
+                                                        difficulty === level ? 600 : 400,
+                                                    textTransform: 'none',
+                                                    })}>
+                                                {level}
+                                            </Button>
+                                        </span>
+                                    </Tooltip>
 
-                                    {/* Tooltips */}
+                                    {/* Lock icon overlap */}
                                     {isLocked && (
-                                        <Tooltip title='Subscribe to unlock'>
-                                            <Box
-                                                alignItems='center'
-                                                bgcolor='rgba(156, 156, 156, 0.4)'
-                                                display='flex'
-                                                height='100%'
-                                                justifyContent='center'
-                                                left={0}
-                                                position='absolute'
-                                                sx={{ pointerEvents: 'none' }}
-                                                top={0}
-                                                width='100%'>
-                                                <LockOutlinedIcon
-                                                    color='action'
-                                                    fontSize='small'
-                                                />
-                                            </Box>
-                                        </Tooltip>
+                                        <Box
+                                            alignItems='center'
+                                            bgcolor='rgba(156, 156, 156, 0.4)'
+                                            display='flex'
+                                            height='100%'
+                                            justifyContent='center'
+                                            left={0}
+                                            position='absolute'
+                                            sx={{ pointerEvents: 'none' }}
+                                            top={0}
+                                            width='100%'>
+                                            <LockOutlinedIcon
+                                                color='action'
+                                                fontSize='small'
+                                            />
+                                        </Box>
                                     )}
                                 </Box>
                             )
