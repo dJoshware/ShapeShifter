@@ -94,7 +94,7 @@ export default function SignUpPage() {
         
         try {
             // const additionalData = { full_name: "Some Name" };
-            const { error } = await signUp(email, password /* additional data */);
+            const { data, error } = await signUp(email, password /* additional data */);
 
             if (error) {
                 setAlertSeverity("error");
@@ -104,12 +104,24 @@ export default function SignUpPage() {
                     : error.message
                     // : "Please enter a valid email address"
                 );
-            } else {
+                return;
+            }
+
+            if (data?.session) {
+                // Email confirmation disabled; user already signed in
                 setAlertSeverity("success");
                 setAlertMessage("Registration successful! Redirecting...");
+                await new Promise(resolve => setTimeout(resolve, 3000));
+                router.replace('/');
+            } else {
+                // Email confirmation enabled; no session yet
+                setAlertSeverity("success");
+                setAlertMessage("Registration successful! Please check your email.");
+                await new Promise(resolve => setTimeout(resolve, 3000));
+                router.replace('/signin');
             }
         } catch (err) {
-            console.error('Account creation error:', err);
+            console.error('Registration error:', err);
             setAlertSeverity("error");
             setAlertMessage('Could not create your account. Please try again.');
         }
@@ -256,7 +268,7 @@ export default function SignUpPage() {
                                             borderRight: '2px solid #39434b',
                                             pr: .8,
                                         }}>
-                                        <PersonIcon color={alertMessage ? 'error' : 'action'} />
+                                        <PersonIcon color={alertSeverity === 'error' ? 'error' : 'action'} />
                                     </InputAdornment>
                                 }
                                 sx={theme => ({
@@ -295,7 +307,7 @@ export default function SignUpPage() {
                                             borderRight: '2px solid #39434b',
                                             pr: .7,
                                         }}>
-                                        <KeyIcon color={alertMessage ? 'error' : 'action'} />
+                                        <KeyIcon color={alertSeverity === 'error' ? 'error' : 'action'} />
                                     </InputAdornment>
                                 }
                                 sx={theme => ({
@@ -334,7 +346,7 @@ export default function SignUpPage() {
                                             borderRight: '2px solid #39434b',
                                             pr: .7,
                                         }}>
-                                        <KeyIcon color={alertMessage ? 'error' : 'action'} />
+                                        <KeyIcon color={alertSeverity === 'error' ? 'error' : 'action'} />
                                     </InputAdornment>
                                 }
                                 sx={theme => ({
