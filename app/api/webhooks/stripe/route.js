@@ -19,6 +19,7 @@ const supabaseAdmin = createClient(
 function toRow(sub, userId) {
     const firstItem = sub.items?.data?.[0] || null;
     const priceId = firstItem?.price?.id || null;
+
     return {
         user_id: userId || null,
         stripe_cust_id: sub.customer || null,
@@ -26,7 +27,7 @@ function toRow(sub, userId) {
         tier: priceId,
         status: sub.status,
         current_period_end: new Date(
-            sub.current_period_end * 1000
+            firstItem.current_period_end * 1000
         ).toISOString(),
         updated_at: new Date().toISOString(),
     };
@@ -42,12 +43,12 @@ export async function POST(req) {
     });
 
     const sig = req.headers.get('stripe-signature');
-    const body = await req.text();
+    const raw = Buffer.from(await req.arrayBuffer());
 
     let event;
     try {
         event = stripe.webhooks.constructEvent(
-            body,
+            raw,
             sig,
             process.env.STRIPE_WEBHOOK_SECRET
         );
@@ -100,16 +101,18 @@ export async function POST(req) {
             case 'customer.subscription.created':
             case 'customer.subscription.updated': {
                 const sub = event.data.object;
-                console.log(
-                    'sub.meta:',
-                    sub.metadata,
-                    'cust:',
-                    sub.customer,
-                    'sub:',
-                    sub.id
-                );
-                let userId = sub.metadata?.supabase_user_id || null;
 
+                // If Stripe didn't include period end yet, fetch latest object
+                if (!sub.current_period_end) {
+                    try {
+                        const fresh = await stripe.subscriptions.retrieve(sub.id);
+                        if (fresh) sub = fresh;
+                    } catch (e) {
+                        console.warn('Retrieve fallback failed:', e.message);
+                    }
+                }
+
+                let userId = sub.metadata?.supabase_user_id || null;
                 // Fallback: map by customer if metadata missing
                 if (!userId && sub.customer) {
                     const { data: existing, error } = await supabaseAdmin
