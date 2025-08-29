@@ -13,6 +13,7 @@ export default function RootLayout({ children }) {
         <html lang='en'>
             <body>
                 <Box sx={{
+                    bgcolor: '#ECEBDE',
                     display: 'flex',
                     flexDirection: 'column',
                     minHeight: '100vh',
@@ -22,7 +23,6 @@ export default function RootLayout({ children }) {
                             <Box
                                 component='main'
                                 sx={{
-                                    bgcolor: '#ECEBDE',
                                     display: 'flex',
                                     flex: 1,
                                     flexDirection: 'column'
