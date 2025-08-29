@@ -189,6 +189,7 @@ export default function SignUpPage() {
                         color: theme.palette.main.dark_blue,
                         fontSize: 36,
                         fontWeight: 600,
+                        mb: 2,
                     })}>
                     Loading Shape Shifter...
                 </Typography>
@@ -201,16 +202,13 @@ export default function SignUpPage() {
 
     return (
         <Box
-            sx={theme => ({
-                alignItems: 'center',
-                bgcolor: theme.palette.sand.one,
-                display: 'flex',
-                justifyContent: 'center',
-                minHeight: '100vh',
-            })}>
-            <Container maxWidth='sm'> {/* Try 'sm' if too wide */}
+            sx={{
+                display: 'grid',
+                flex: 1,
+                placeItems: 'center',
+            }}>
+            <Container maxWidth='sm'>
                 <Grid
-                    alignItems='center'
                     container
                     justifyContent={isMobile || isTablet ? 'center' : 'space-evenly'}
                     sx={{ p: 4 }}>

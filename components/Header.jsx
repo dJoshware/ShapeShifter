@@ -362,6 +362,7 @@ export default function Header({ difficulty, onDifficultyChange }) {
                 position='static'
                 sx={theme => ({
                     bgcolor: theme.palette.sand.one,
+                    boxShadow: 'none',
                     display: 'flex',
                     flexDirection: 'row',
                     pb: 1,

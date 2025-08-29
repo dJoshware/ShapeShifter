@@ -13,9 +13,8 @@ import {
     useMediaQuery,
     useTheme,
 } from "@mui/material";
-import ShuffleIcon from '@mui/icons-material/Shuffle';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import ShuffleIcon from '@mui/icons-material/Shuffle'; // Shuffle off
+import ShuffleOnIcon from '@mui/icons-material/ShuffleOn'; // Shuffle on
 import Header from '../components/Header';
 import FretboardDiagram from '../components/Fretboard';
 import NotesIntervalsToggle from '../components/NotesIntervalsToggle';
@@ -403,14 +402,12 @@ export default function Home() {
             />
 
             {/* Content */}
-            <Box
+            {/* <Box
                 sx={theme => ({
-                    // alignItems: 'center',
-                    bgcolor: theme.palette.sand.one,
-                    display: 'flex',
+                    // bgcolor: theme.palette.sand.one,
+                    // display: 'flex',
                     justifyContent: 'center',
-                    minHeight: '100vh',
-                })}>
+                })}> */}
                 <Container maxWidth='xl'>
                     {/* Container Grid */}
                     <Grid
@@ -687,7 +684,7 @@ export default function Home() {
                         />
                     </Grid>
                 </Container>
-            </Box>
+            {/* </Box> */}
         </>
     );
 }
