@@ -365,8 +365,7 @@ export default function Header({ difficulty, onDifficultyChange }) {
                     boxShadow: 'none',
                     display: 'flex',
                     flexDirection: 'row',
-                    pb: 1,
-                    pt: 4,
+                    py: 4,
                     textAlign: 'center'
                 })}>
                 {/* Level indicators */}

@@ -417,9 +417,7 @@ export default function Home() {
                     {/* Fretboard */}
                     <Grid
                         size={12} // Was conditional on device; Made bigger for interval text in dots
-                        sx={theme => ({
-                            my: 2,
-                        })}>
+                        sx={{ my: 2 }}>
                         <FretboardDiagram
                             chordShape={displayShape}
                             rootNote={currentRootNote}
