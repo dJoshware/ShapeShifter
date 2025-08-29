@@ -1,0 +1,1 @@
+Code is viewable for reference only; all rights reserved. Contact for commercial licensing.
