@@ -1,0 +1,78 @@
+name: Build, Push, and Mark Desired Image
+
+on:
+  push:
+    branches: [ prod ]   # runs when dev→prod merge lands
+  workflow_dispatch:      # allow manual runs
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Derive version/tag
+        id: meta
+        shell: bash
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          SHORT_SHA=${GITHUB_SHA::7}
+          TAG="v${VERSION}-${SHORT_SHA}"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+      - name: Build & Push image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ vars.DOCKER_IMAGE }}:latest
+            ${{ vars.DOCKER_IMAGE }}:${{ steps.meta.outputs.tag }}
+          # Only if you bake NEXT_PUBLIC_* at build time
+          build-args: |
+            NEXT_PUBLIC_SUPABASE_URL=${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+            NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+
+      # Use GitHub OIDC to AWS (better than static keys)
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Write desired image & release notes to SSM
+        shell: bash
+        run: |
+          DESIRED="${{ vars.DOCKER_IMAGE }}:${{ steps.meta.outputs.tag }}"
+          aws ssm put-parameter \
+            --name "/shapeshifter/prod/desired_image" \
+            --type String --overwrite --value "$DESIRED"
+
+          NOTES="$(git log -1 --pretty=format:'%s%n%n%b')"
+          aws ssm put-parameter \
+            --name "/shapeshifter/prod/release_notes" \
+            --type String --overwrite --value "$NOTES"
+
+      - name: (Optional) Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.meta.outputs.tag }}
+          name: ${{ steps.meta.outputs.tag }}
+          body: ${{ steps.meta.outputs.version }} • ${{ github.event.head_commit.message }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
