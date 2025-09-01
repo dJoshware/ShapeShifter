@@ -5,7 +5,12 @@ import { createServClient } from '../../../lib/supabaseServerClient';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+// Get secret key at runtime, not build time
+function getStripe() {
+    const key = process.env.STRIPE_SECRET_KEY;
+    if (!key) throw new Error('STRIPE_SECRET_KEY is not set');
+    return new Stripe(key, { apiVersion: '2025-06-30.basil' });
+}
 
 // Optional allowlist so priceId cannot be tampered with from the client
 const PRICE_MAP = {
@@ -14,6 +19,7 @@ const PRICE_MAP = {
 };
 
 export async function POST(req) {
+    const stripe = getStripe();
     try {
         const { email, plan } = await req.json();
         const priceId = PRICE_MAP[plan];

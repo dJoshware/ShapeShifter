@@ -126,6 +126,7 @@ export default function LoginPage() {
                         color: theme.palette.main.dark_blue,
                         fontSize: 36,
                         fontWeight: 600,
+                        mb: 2,
                     })}>
                     Loading Shape Shifter...
                 </Typography>
@@ -138,16 +139,13 @@ export default function LoginPage() {
 
     return (
         <Box
-            sx={theme => ({
-                alignItems: 'center',
-                bgcolor: theme.palette.sand.one,
-                display: 'flex',
-                justifyContent: 'center',
-                minHeight: '100vh',
-            })}>
-            <Container maxWidth='sm'> {/* Try 'sm' if too wide */}
+            sx={{
+                display: 'grid',
+                flex: 1,
+                placeItems: 'center',
+            }}>
+            <Container maxWidth='sm'>
                 <Grid
-                    alignItems='center'
                     container
                     justifyContent={isMobile || isTablet ? 'center' : 'space-evenly'}
                     sx={{ p: 4 }}>
@@ -163,9 +161,8 @@ export default function LoginPage() {
                             width: '100%'
                         })}
                         textAlign='center'>
-                        <Typography
-                            component='h3'
-                            display='block'
+                        <Link
+                            href='/'
                             sx={theme => ({
                                 color: theme.palette.sand.one,
                                 fontSize:
@@ -174,9 +171,10 @@ export default function LoginPage() {
                                     theme.typography.desktop.h3.fontSize,
                                 fontWeight: 700,
                                 mb: 2,
+                                textDecoration: 'underline',
                             })}>
                             The Shape Shifter
-                        </Typography>
+                        </Link>
                         <Stack spacing={3}>
                             <FormFields
                                 autoComplete='email'

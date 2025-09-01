@@ -182,14 +182,12 @@ export default function PasswordResetPage() {
 
     return (
         <Box
-            sx={theme => ({
-                alignItems: 'center',
-                bgcolor: theme.palette.sand.one,
-                display: 'flex',
-                justifyContent: 'center',
-                minHeight: '100vh',
-            })}>
-            <Container maxWidth='sm'> {/* Try 'sm' if too wide */}
+            sx={{
+                display: 'grid',
+                flex: 1,
+                placeItems: 'center',
+            }}>
+            <Container maxWidth='sm'>
                 <Grid
                     alignItems='center'
                     container

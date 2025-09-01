@@ -13,9 +13,8 @@ import {
     useMediaQuery,
     useTheme,
 } from "@mui/material";
-import ShuffleIcon from '@mui/icons-material/Shuffle';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import ShuffleIcon from '@mui/icons-material/Shuffle'; // Shuffle off
+import ShuffleOnIcon from '@mui/icons-material/ShuffleOn'; // Shuffle on
 import Header from '../components/Header';
 import FretboardDiagram from '../components/Fretboard';
 import NotesIntervalsToggle from '../components/NotesIntervalsToggle';
@@ -403,41 +402,108 @@ export default function Home() {
             />
 
             {/* Content */}
-            <Box
-                sx={theme => ({
-                    // alignItems: 'center',
-                    bgcolor: theme.palette.sand.one,
-                    display: 'flex',
-                    justifyContent: 'center',
-                    minHeight: '100vh',
-                })}>
-                <Container maxWidth='xl'>
-                    {/* Container Grid */}
+            <Container maxWidth='xl'>
+                {/* Container Grid */}
+                <Grid
+                    alignItems='center'
+                    container
+                    flexDirection='column'
+                    justifyContent={isMobile || isTablet ? 'center' : 'space-evenly'}
+                    sx={theme => ({
+                        color: theme.palette.main.dark_blue,
+                    })}
+                    textAlign='center'>
+
+                    {/* Fretboard */}
                     <Grid
-                        alignItems='center'
-                        container
-                        flexDirection='column'
-                        justifyContent={isMobile || isTablet ? 'center' : 'space-evenly'}
-                        sx={theme => ({
-                            color: theme.palette.main.dark_blue,
-                        })}
-                        textAlign='center'>
+                        size={12} // Was conditional on device; Made bigger for interval text in dots
+                        sx={{ my: 2 }}>
+                        <FretboardDiagram
+                            chordShape={displayShape}
+                            rootNote={currentRootNote}
+                            fretboardMap={fretboardMap}
+                            showIntervals={showIntervals}
+                        />
+                    </Grid>
 
-                        {/* Fretboard */}
-                        <Grid
-                            size={12} // Was conditional on device; Made bigger for interval text in dots
+                    {/* Category toggles */}
+                    <Grid>
+                        <ButtonGroup
                             sx={theme => ({
-                                my: 2,
-                            })}>
-                            <FretboardDiagram
-                                chordShape={displayShape}
-                                rootNote={currentRootNote}
-                                fretboardMap={fretboardMap}
-                                showIntervals={showIntervals}
-                            />
-                        </Grid>
+                                '& .MuiButton-outlined': {
+                                    borderColor: theme.palette.main.dark_blue,
+                                },
+                            })}
+                            variant='outlined'>
+                            {selectionHierarchy.categories.map(type => (
+                                <Button
+                                    key={type}
+                                    onClick={() => handleCategoryChange(type)}
+                                    sx={theme => ({
+                                        bgcolor:
+                                            selectedCategory === type ?
+                                            theme.palette.sand.four :
+                                            theme.palette.sand.one,
+                                        color:
+                                            selectedCategory === type ?
+                                            theme.palette.sand.one :
+                                            theme.palette.main.dark_blue,
+                                        fontWeight:
+                                            selectedCategory === type ? 600 : 400,
+                                        textTransform: 'none',
+                                        mb: 2,
+                                    })}>
+                                    {type}
+                                </Button>
+                            ))}
+                        </ButtonGroup>
+                    </Grid>
 
-                        {/* Category toggles */}
+                    {/* All Sub-level toggles */}
+                    {selectionHierarchy.subLevels.map(({ levelName, options }) => {
+                        const selectedValue =
+                            levelName === 'Voicing Types' ? selectedVoicingType :
+                            levelName === 'String Sets' ? selectedStringSet :
+                            selectedChordQuality;
+                        const setter = getSetterForLevel(levelName);
+
+                        return (
+                            <Grid key={levelName}>
+                                <ButtonGroup
+                                    sx={theme => ({
+                                        '& .MuiButton-outlined': {
+                                            borderColor: theme.palette.main.dark_blue,
+                                        },
+                                    })}
+                                    variant='outlined'>
+                                    {options.map(option => (
+                                        <Button
+                                            key={option}
+                                            onClick={() => setter(option)}
+                                            sx={theme => ({
+                                                bgcolor:
+                                                    selectedValue === option ?
+                                                    theme.palette.sand.four :
+                                                    theme.palette.sand.one,
+                                                color:
+                                                    selectedValue === option ?
+                                                    theme.palette.sand.one :
+                                                    theme.palette.main.dark_blue,
+                                                fontWeight:
+                                                    selectedValue === option ? 600 : 400,
+                                                textTransform: 'none',
+                                                mb: 2,
+                                            })}>
+                                            {option}
+                                        </Button>
+                                    ))}
+                                </ButtonGroup>
+                            </Grid>
+                        )
+                    })}
+
+                    {/* Position toggles */}
+                    {selectionHierarchy.positions.length > 0 && (
                         <Grid>
                             <ButtonGroup
                                 sx={theme => ({
@@ -446,248 +512,170 @@ export default function Home() {
                                     },
                                 })}
                                 variant='outlined'>
-                                {selectionHierarchy.categories.map(type => (
                                     <Button
-                                        key={type}
-                                        onClick={() => handleCategoryChange(type)}
+                                        key={'All'}
+                                        onClick={() => handlePositionChange('All')}
                                         sx={theme => ({
                                             bgcolor:
-                                                selectedCategory === type ?
+                                                selectedPosition === 'All' ?
                                                 theme.palette.sand.four :
                                                 theme.palette.sand.one,
                                             color:
-                                                selectedCategory === type ?
+                                                selectedPosition === 'All' ?
                                                 theme.palette.sand.one :
                                                 theme.palette.main.dark_blue,
                                             fontWeight:
-                                                selectedCategory === type ? 600 : 400,
-                                            textTransform: 'none',
+                                                selectedPosition === 'All' ? 600 : 400,
                                             mb: 2,
+                                            textTransform: 'none',
                                         })}>
-                                        {type}
+                                        All
+                                    </Button>
+                                {selectionHierarchy.positions.map(pos => (
+                                    <Button
+                                        key={pos}
+                                        onClick={() => handlePositionChange(pos)}
+                                        sx={theme => ({
+                                            bgcolor:
+                                                selectedPosition === pos ?
+                                                theme.palette.sand.four :
+                                                theme.palette.sand.one,
+                                            color:
+                                                selectedPosition === pos ?
+                                                theme.palette.sand.one :
+                                                theme.palette.main.dark_blue,
+                                            fontSize:
+                                                isMobile || isTablet ?
+                                                12 : 14,
+                                            fontWeight:
+                                                selectedPosition === pos ? 600 : 400,
+                                            lineHeight: 1.4,
+                                            mb: 2,
+                                            textTransform: 'none',
+                                        })}>
+                                        {selectionHierarchy.finalFormulas?.[pos]?.name || pos}
                                     </Button>
                                 ))}
                             </ButtonGroup>
                         </Grid>
+                    )}
 
-                        {/* All Sub-level toggles */}
-                        {selectionHierarchy.subLevels.map(({ levelName, options }) => {
-                            const selectedValue =
-                                levelName === 'Voicing Types' ? selectedVoicingType :
-                                levelName === 'String Sets' ? selectedStringSet :
-                                selectedChordQuality;
-                            const setter = getSetterForLevel(levelName);
-
-                            return (
-                                <Grid key={levelName}>
-                                    <ButtonGroup
-                                        sx={theme => ({
-                                            '& .MuiButton-outlined': {
-                                                borderColor: theme.palette.main.dark_blue,
-                                            },
-                                        })}
-                                        variant='outlined'>
-                                        {options.map(option => (
-                                            <Button
-                                                key={option}
-                                                onClick={() => setter(option)}
-                                                sx={theme => ({
-                                                    bgcolor:
-                                                        selectedValue === option ?
-                                                        theme.palette.sand.four :
-                                                        theme.palette.sand.one,
-                                                    color:
-                                                        selectedValue === option ?
-                                                        theme.palette.sand.one :
-                                                        theme.palette.main.dark_blue,
-                                                    fontWeight:
-                                                        selectedValue === option ? 600 : 400,
-                                                    textTransform: 'none',
-                                                    mb: 2,
-                                                })}>
-                                                {option}
-                                            </Button>
-                                        ))}
-                                    </ButtonGroup>
-                                </Grid>
-                            )
-                        })}
-
-                        {/* Position toggles */}
-                        {selectionHierarchy.positions.length > 0 && (
-                            <Grid>
-                                <ButtonGroup
-                                    sx={theme => ({
-                                        '& .MuiButton-outlined': {
-                                            borderColor: theme.palette.main.dark_blue,
-                                        },
-                                    })}
-                                    variant='outlined'>
-                                        <Button
-                                            key={'All'}
-                                            onClick={() => handlePositionChange('All')}
-                                            sx={theme => ({
-                                                bgcolor:
-                                                    selectedPosition === 'All' ?
-                                                    theme.palette.sand.four :
-                                                    theme.palette.sand.one,
-                                                color:
-                                                    selectedPosition === 'All' ?
-                                                    theme.palette.sand.one :
-                                                    theme.palette.main.dark_blue,
-                                                fontWeight:
-                                                    selectedPosition === 'All' ? 600 : 400,
-                                                mb: 2,
-                                                textTransform: 'none',
-                                            })}>
-                                            All
-                                        </Button>
-                                    {selectionHierarchy.positions.map(pos => (
-                                        <Button
-                                            key={pos}
-                                            onClick={() => handlePositionChange(pos)}
-                                            sx={theme => ({
-                                                bgcolor:
-                                                    selectedPosition === pos ?
-                                                    theme.palette.sand.four :
-                                                    theme.palette.sand.one,
-                                                color:
-                                                    selectedPosition === pos ?
-                                                    theme.palette.sand.one :
-                                                    theme.palette.main.dark_blue,
-                                                fontSize:
-                                                    isMobile || isTablet ?
-                                                    12 : 14,
-                                                fontWeight:
-                                                    selectedPosition === pos ? 600 : 400,
-                                                lineHeight: 1.4,
-                                                mb: 2,
-                                                textTransform: 'none',
-                                            })}>
-                                            {selectionHierarchy.finalFormulas?.[pos]?.name || pos}
-                                        </Button>
-                                    ))}
-                                </ButtonGroup>
-                            </Grid>
-                        )}
-
-                        {/* 'Alternate patterns' toggles; if exists */}
-                        {availableAlts.length > 1 && (
-                            <Grid>
-                                <Typography
-                                    display='block'
-                                    sx={{
-                                        fontWeight: 500,
-                                        textTransform: 'none'
-                                    }}
-                                    variant='caption'>
-                                    Alternate Positions
-                                </Typography>
-                                <ButtonGroup
-                                    sx={theme => ({
-                                        '& .MuiButton-outlined': {
-                                            borderColor: theme.palette.main.dark_blue,
-                                        },
-                                    })}
-                                    variant='outlined'>
-                                    {availableAlts.map((formula, index) => (
-                                        <Button
-                                            key={index}
-                                            onClick={() => setSelectedAltShape(index)}
-                                            sx={theme => ({
-                                                bgcolor:
-                                                    selectedAltShape === index ?
-                                                    theme.palette.sand.four :
-                                                    theme.palette.sand.one,
-                                                color:
-                                                    selectedAltShape === index ?
-                                                    theme.palette.sand.one :
-                                                    theme.palette.main.dark_blue,
-                                                fontSize:
-                                                    isMobile || isTablet ?
-                                                    12 : 14,
-                                                fontWeight:
-                                                    selectedAltShape === index ? 600 : 400,
-                                                lineHeight: 1.4,
-                                                mb: 2,
-                                                textTransform: 'none',
-                                            })}>
-                                            {index + 1}
-                                        </Button>
-                                    ))}
-                                </ButtonGroup>
-                            </Grid>
-                        )}
-
-                        {/* Content Grid */}
-                        <Grid size={isMobile || isTablet ? 8 : 3}
-                            sx={theme => ({
-                                bgcolor: theme.palette.sand.four,
-                                borderRadius: 3,
-                                // mt: '',
-                                py: 2
-                            })}>
+                    {/* 'Alternate patterns' toggles; if exists */}
+                    {availableAlts.length > 1 && (
+                        <Grid>
                             <Typography
                                 display='block'
-                                sx={theme => ({
-                                    // color: theme.palette.main.white,
-                                    fontSize:
-                                        isMobile || isTablet ?
-                                        theme.typography.mobile.h3.fontSize :
-                                        theme.typography.desktop.h3.fontSize,
-                                    fontWeight: 600,
-                                    mb: 2,
-                                    textTransform: 'none',
-                                })}>
-                                {
-                                selectedCategory === 'CAGED' ?
-                                    `${currentRootNote}` :
-                                    `${currentRootNote} ${selectedChordQuality}`
-                                }
+                                sx={{
+                                    fontWeight: 500,
+                                    textTransform: 'none'
+                                }}
+                                variant='caption'>
+                                Alternate Positions
                             </Typography>
-                            <Button
-                                onClick={handleGenerateNewRoot}
+                            <ButtonGroup
                                 sx={theme => ({
-                                    bgcolor: theme.palette.main.dark_blue,
-                                    borderRadius: 6,
-                                    color: theme.palette.sand.one,
-                                    fontSize:
-                                        isMobile || isTablet ?
-                                        theme.typography.mobile.h5.fontSize :
-                                        theme.typography.desktop.h5.fontSize,
-                                    fontWeight: 600,
-                                    maxWidth: 'fit-content',
-                                    mx: 'auto',
-                                    px: 2,
-                                    textTransform: 'none',
-                                })}>
-                                New Chord
-                            </Button>
+                                    '& .MuiButton-outlined': {
+                                        borderColor: theme.palette.main.dark_blue,
+                                    },
+                                })}
+                                variant='outlined'>
+                                {availableAlts.map((formula, index) => (
+                                    <Button
+                                        key={index}
+                                        onClick={() => setSelectedAltShape(index)}
+                                        sx={theme => ({
+                                            bgcolor:
+                                                selectedAltShape === index ?
+                                                theme.palette.sand.four :
+                                                theme.palette.sand.one,
+                                            color:
+                                                selectedAltShape === index ?
+                                                theme.palette.sand.one :
+                                                theme.palette.main.dark_blue,
+                                            fontSize:
+                                                isMobile || isTablet ?
+                                                12 : 14,
+                                            fontWeight:
+                                                selectedAltShape === index ? 600 : 400,
+                                            lineHeight: 1.4,
+                                            mb: 2,
+                                            textTransform: 'none',
+                                        })}>
+                                        {index + 1}
+                                    </Button>
+                                ))}
+                            </ButtonGroup>
                         </Grid>
-                        {/* Shuffle toggle */}
-                        <FormControlLabel
-                            checked={shuffleChecked}
-                            control={
-                                <Checkbox
-                                    sx={theme => ({
-                                        color: theme.palette.main.dark_blue,
-                                        '&.Mui-checked': {
-                                            color: theme.palette.main.dark_blue,
-                                        },
-                                    })}
-                                />
+                    )}
+
+                    {/* Content Grid */}
+                    <Grid size={isMobile || isTablet ? 8 : 3}
+                        sx={theme => ({
+                            bgcolor: theme.palette.sand.four,
+                            borderRadius: 3,
+                            // mt: '',
+                            py: 2
+                        })}>
+                        <Typography
+                            display='block'
+                            sx={theme => ({
+                                // color: theme.palette.main.white,
+                                fontSize:
+                                    isMobile || isTablet ?
+                                    theme.typography.mobile.h3.fontSize :
+                                    theme.typography.desktop.h3.fontSize,
+                                fontWeight: 600,
+                                mb: 2,
+                                textTransform: 'none',
+                            })}>
+                            {
+                            selectedCategory === 'CAGED' ?
+                                `${currentRootNote}` :
+                                `${currentRootNote} ${selectedChordQuality}`
                             }
-                            label='Shuffle'
-                            onChange={e => setShuffleChecked(e.target.checked)}
-                        />
-                        {/* View toggle */}
-                        <NotesIntervalsToggle
-                            showIntervals={showIntervals}
-                            onToggle={setShowIntervals}
-                        />
+                        </Typography>
+                        <Button
+                            onClick={handleGenerateNewRoot}
+                            sx={theme => ({
+                                bgcolor: theme.palette.main.dark_blue,
+                                borderRadius: 6,
+                                color: theme.palette.sand.one,
+                                fontSize:
+                                    isMobile || isTablet ?
+                                    theme.typography.mobile.h5.fontSize :
+                                    theme.typography.desktop.h5.fontSize,
+                                fontWeight: 600,
+                                maxWidth: 'fit-content',
+                                mx: 'auto',
+                                px: 2,
+                                textTransform: 'none',
+                            })}>
+                            New Chord
+                        </Button>
                     </Grid>
-                </Container>
-            </Box>
+                    {/* Shuffle toggle */}
+                    <FormControlLabel
+                        checked={shuffleChecked}
+                        control={
+                            <Checkbox
+                                sx={theme => ({
+                                    color: theme.palette.main.dark_blue,
+                                    '&.Mui-checked': {
+                                        color: theme.palette.main.dark_blue,
+                                    },
+                                })}
+                            />
+                        }
+                        label='Shuffle'
+                        onChange={e => setShuffleChecked(e.target.checked)}
+                    />
+                    {/* View toggle */}
+                    <NotesIntervalsToggle
+                        showIntervals={showIntervals}
+                        onToggle={setShowIntervals}
+                    />
+                </Grid>
+            </Container>
         </>
     );
 }

@@ -1,17 +1,38 @@
 import Mailgun from 'mailgun.js';
 import FormData from 'form-data';
 
-const mailgun = new Mailgun(FormData);
-const mg = mailgun.client({
-    username: 'api',
-    key: process.env.MAILGUN_API_KEY,
-});
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+// Create Mailgun client at runtime, not build time
+function getMailgun() {
+    const key = process.env.MAILGUN_API_KEY;
+    const domain = process.env.MAILGUN_DOMAIN;
+    const from = process.env.MAILGUN_FROM;
+    const to = process.env.MAILGUN_TO;
+    if (!key || !domain || !from || !to) {
+        throw new Error('Mailgun env vars are not set');
+    }
+    const mailgun = new Mailgun(FormData);
+    return {
+        mg: mailgun.client({ username: 'api', key }),
+        domain,
+        from,
+        to,
+    };
+}
 
 export async function POST(req) {
+    const { mg, domain, from, to } = getMailgun();
+
+    const contentType = req.headers.get('content-type') || '';
+    if (!contentType.includes('multipart/form-data')) {
+        return new Response(JSON.stringify({ success: false, error: 'Expected multipart/form-data' }), { status: 400 });
+    }
     const body = await req.formData();
-    const email = body.get('email');
-    const message = body.get('message');
-    const files = body.getAll('files');
+    const email = body.get('email') || 'unknown@user';
+    const message = body.get('message') || '';
+    const files = body.getAll('files') ?? [];
 
     const attachments = await Promise.all(
         files.map(async file => {
@@ -25,12 +46,12 @@ export async function POST(req) {
     );
 
     try {
-        const result = await mg.messages.create(process.env.MAILGUN_DOMAIN, {
-            from: process.env.MAILGUN_FROM,
-            to: [process.env.MAILGUN_TO],
+        const result = await mg.messages.create(domain, {
+            from,
+            to: [to],
             subject: '🛠️ New Issue Reported',
             text: `From: ${email}\n\nMessage:\n${message}`,
-            attachment: attachments,
+            ...(attachments.length ? { attachment: attachments } : {}),
         });
 
         return new Response(JSON.stringify({ success: true, data: result }), {

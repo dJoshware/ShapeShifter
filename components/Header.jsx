@@ -362,10 +362,10 @@ export default function Header({ difficulty, onDifficultyChange }) {
                 position='static'
                 sx={theme => ({
                     bgcolor: theme.palette.sand.one,
+                    boxShadow: 'none',
                     display: 'flex',
                     flexDirection: 'row',
-                    pb: 1,
-                    pt: 4,
+                    py: 4,
                     textAlign: 'center'
                 })}>
                 {/* Level indicators */}
@@ -875,6 +875,7 @@ export default function Header({ difficulty, onDifficultyChange }) {
             )}
 
             {/* Paywall modal */}
+            {/* PUT PAYWALL BACK; AT BOTTOM */}
             <Dialog
                 fullWidth
                 maxWidth='md'
@@ -892,7 +893,7 @@ export default function Header({ difficulty, onDifficultyChange }) {
                         fontWeight: 700,
                         pb: 2,
                     })}>
-                    Unlock Full Access
+                    We're working on it...
                 </DialogTitle>
                 <DialogContent
                     sx={theme => ({
@@ -900,74 +901,12 @@ export default function Header({ difficulty, onDifficultyChange }) {
                     })}>
                     <Typography
                         sx={{ mb: 1, mt: 3 }}>
-                        Want access to <em><strong>Advanced shapes</strong></em> and <em><strong>Draw Mode</strong></em>?
+                        Please be patient with us while we continue to develop the <em><strong>Advanced</strong></em> and <em><strong>Draw Mode</strong></em> features.
                     </Typography>
                     <Typography
                         sx={{ mb: 1 }}>
-                        Subscribe to <strong>Shape Shifter Pro</strong> and get unlimited access to all levels, plus exclusive features and content
+                        As they get finished, we will notify you either by in-app notification or email.
                     </Typography>
-                    {/* User's pricing options */}
-                    <ToggleButtonGroup
-                        exclusive
-                        fullWidth
-                        onChange={(e, newId) => {
-                            if (newId !== null) setPlan(newId);
-                        }}
-                        sx={theme => ({
-                            my: 2,
-                        })}
-                        value={plan}>
-                        <ToggleButton
-                            sx={theme => ({
-                                border: `2px solid ${theme.palette.main.dark_blue}`,
-                                bgcolor: theme.palette.sand.two,
-                                textTransform: 'none',
-                                '&.Mui-selected': {
-                                    bgcolor: theme.palette.sand.four,
-                                    color: theme.palette.sand.one,
-                                    fontSize: 18,
-                                    fontWeight: 600,
-                                    '&:hover': {
-                                        bgcolor: theme.palette.sand.three,
-                                    }
-                                },
-                                '&:hover': {
-                                    bgcolor: theme.palette.sand.one,
-                                }
-                            })}
-                            value={'monthly'}>
-                            Monthly - $14.99/mo
-                        </ToggleButton>
-                        <ToggleButton
-                            sx={theme => ({
-                                border: `2px solid ${theme.palette.main.dark_blue}`,
-                                bgcolor: theme.palette.sand.two,
-                                textTransform: 'none',
-                                '&.Mui-selected': {
-                                    bgcolor: theme.palette.sand.four,
-                                    color: theme.palette.sand.one,
-                                    fontSize: 18,
-                                    fontWeight: 600,
-                                    '&:hover': {
-                                        bgcolor: theme.palette.sand.three,
-                                    }
-                                },
-                                '&:hover': {
-                                    bgcolor: theme.palette.sand.one,
-                                }
-                            })}
-                            value={'yearly'}>
-                            Yearly - $149.99/yr
-                        </ToggleButton>
-                    </ToggleButtonGroup>
-                    {paywallAlertMessage && (
-                        <Alert
-                            severity={paywallAlertSeverity}
-                            sx={{ fontWeight: 700, mb: 3, mt: 1 }}
-                            variant='filled'>
-                                {paywallAlertMessage}
-                        </Alert>
-                    )}
                 </DialogContent>
                 <DialogActions
                     sx={theme => ({
@@ -987,26 +926,7 @@ export default function Header({ difficulty, onDifficultyChange }) {
                             px: 2,
                             textTransform: 'none',
                         })}>
-                        Cancel
-                    </Button>
-                    <Button
-                        disabled={paywallLoading}
-                        loading={paywallLoading}
-                        loadingPosition='center'
-                        onClick={() => handleSubscribe()}
-                        sx={theme => ({
-                            bgcolor: theme.palette.main.dark_blue,
-                            borderRadius: 6,
-                            color: theme.palette.sand.one,
-                            fontSize:
-                                isMobile || isTablet ?
-                                theme.typography.mobile.h6.fontSize :
-                                theme.typography.desktop.h6.fontSize,
-                            maxWidth: 'fit-content',
-                            px: 2,
-                            textTransform: 'none',
-                        })}>
-                        Subscribe
+                        Close
                     </Button>
                 </DialogActions>
             </Dialog>
@@ -1043,9 +963,15 @@ export default function Header({ difficulty, onDifficultyChange }) {
                         bgcolor: theme.palette.sand.one,
                     })}>
                     <script async src="https://js.stripe.com/v3/pricing-table.js"></script>
-                    <stripe-pricing-table
+                    {/* Dev pricing table */}
+                    {/* <stripe-pricing-table
                         pricing-table-id="prctbl_1Rq3P9CZkkV2izhom9KluEIL"
                         publishable-key="pk_test_51RihF6CZkkV2izhohRDlBQ169XLw7msXmb77bEEnoqn5ZKbL2cfHiyR590A73h0jjemyLt07IPQJ7JA8XTBUqiii00mnFz6H88">
+                    </stripe-pricing-table> */}
+                    {/* Prod pricing table */}
+                    <stripe-pricing-table
+                        pricing-table-id="prctbl_1S2YivCj7JqkviASCfp9UnI9"
+                        publishable-key="pk_live_51RihEsCj7JqkviASUIf5HFjJgL6gAM8Lw71KZDb6NExYaCZfctuEzsuHH0Spmp30PN8F2UgDpfoPyPjAzH1nsO0j00SDpsqozN">
                     </stripe-pricing-table>
                 </DialogContent>
                 <DialogActions
@@ -1172,3 +1098,139 @@ export default function Header({ difficulty, onDifficultyChange }) {
         </>
     );
 }
+
+            // <Dialog
+            //     fullWidth
+            //     maxWidth='md'
+            //     open={paywallOpen}
+            //     onClose={() => setPaywallOpen(false)}>
+            //     <DialogTitle
+            //         sx={theme => ({
+            //             bgcolor: theme.palette.sand.one,
+            //             borderBottom: `2px solid ${theme.palette.main.dark_blue}`,
+            //             color: theme.palette.main.dark_blue,
+            //             fontSize:
+            //                 isMobile || isTablet ?
+            //                 theme.typography.mobile.h3.fontSize :
+            //                 theme.typography.desktop.h3.fontSize,
+            //             fontWeight: 700,
+            //             pb: 2,
+            //         })}>
+            //         Unlock Full Access
+            //     </DialogTitle>
+            //     <DialogContent
+            //         sx={theme => ({
+            //             bgcolor: theme.palette.sand.one,
+            //         })}>
+            //         <Typography
+            //             sx={{ mb: 1, mt: 3 }}>
+            //             Want access to <em><strong>Advanced shapes</strong></em> and <em><strong>Draw Mode</strong></em>?
+            //         </Typography>
+            //         <Typography
+            //             sx={{ mb: 1 }}>
+            //             Subscribe to <strong>Shape Shifter Pro</strong> and get unlimited access to all levels, plus exclusive features and content
+            //         </Typography>
+            //         {/* User's pricing options */}
+            //         <ToggleButtonGroup
+            //             exclusive
+            //             fullWidth
+            //             onChange={(e, newId) => {
+            //                 if (newId !== null) setPlan(newId);
+            //             }}
+            //             sx={theme => ({
+            //                 my: 2,
+            //             })}
+            //             value={plan}>
+            //             <ToggleButton
+            //                 sx={theme => ({
+            //                     border: `2px solid ${theme.palette.main.dark_blue}`,
+            //                     bgcolor: theme.palette.sand.two,
+            //                     textTransform: 'none',
+            //                     '&.Mui-selected': {
+            //                         bgcolor: theme.palette.sand.four,
+            //                         color: theme.palette.sand.one,
+            //                         fontSize: 18,
+            //                         fontWeight: 600,
+            //                         '&:hover': {
+            //                             bgcolor: theme.palette.sand.three,
+            //                         }
+            //                     },
+            //                     '&:hover': {
+            //                         bgcolor: theme.palette.sand.one,
+            //                     }
+            //                 })}
+            //                 value={'monthly'}>
+            //                 Monthly - $14.99/mo
+            //             </ToggleButton>
+            //             <ToggleButton
+            //                 sx={theme => ({
+            //                     border: `2px solid ${theme.palette.main.dark_blue}`,
+            //                     bgcolor: theme.palette.sand.two,
+            //                     textTransform: 'none',
+            //                     '&.Mui-selected': {
+            //                         bgcolor: theme.palette.sand.four,
+            //                         color: theme.palette.sand.one,
+            //                         fontSize: 18,
+            //                         fontWeight: 600,
+            //                         '&:hover': {
+            //                             bgcolor: theme.palette.sand.three,
+            //                         }
+            //                     },
+            //                     '&:hover': {
+            //                         bgcolor: theme.palette.sand.one,
+            //                     }
+            //                 })}
+            //                 value={'yearly'}>
+            //                 Yearly - $149.99/yr
+            //             </ToggleButton>
+            //         </ToggleButtonGroup>
+            //         {paywallAlertMessage && (
+            //             <Alert
+            //                 severity={paywallAlertSeverity}
+            //                 sx={{ fontWeight: 700, mb: 3, mt: 1 }}
+            //                 variant='filled'>
+            //                     {paywallAlertMessage}
+            //             </Alert>
+            //         )}
+            //     </DialogContent>
+            //     <DialogActions
+            //         sx={theme => ({
+            //             bgcolor: theme.palette.sand.one
+            //         })}>
+            //         <Button
+            //             onClick={() => setPaywallOpen(false)}
+            //             sx={theme => ({
+            //                 bgcolor: theme.palette.main.dark_blue,
+            //                 borderRadius: 6,
+            //                 color: theme.palette.sand.one,
+            //                 fontSize:
+            //                     isMobile || isTablet ?
+            //                     theme.typography.mobile.h6.fontSize :
+            //                     theme.typography.desktop.h6.fontSize,
+            //                 maxWidth: 'fit-content',
+            //                 px: 2,
+            //                 textTransform: 'none',
+            //             })}>
+            //             Cancel
+            //         </Button>
+            //         <Button
+            //             disabled={paywallLoading}
+            //             loading={paywallLoading}
+            //             loadingPosition='center'
+            //             onClick={() => handleSubscribe()}
+            //             sx={theme => ({
+            //                 bgcolor: theme.palette.main.dark_blue,
+            //                 borderRadius: 6,
+            //                 color: theme.palette.sand.one,
+            //                 fontSize:
+            //                     isMobile || isTablet ?
+            //                     theme.typography.mobile.h6.fontSize :
+            //                     theme.typography.desktop.h6.fontSize,
+            //                 maxWidth: 'fit-content',
+            //                 px: 2,
+            //                 textTransform: 'none',
+            //             })}>
+            //             Subscribe
+            //         </Button>
+            //     </DialogActions>
+            // </Dialog>

@@ -6,15 +6,19 @@ import { createClient } from '@supabase/supabase-js';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-    apiVersion: '2024-06-20',
-});
-
-const supabaseAdmin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY,
-    { auth: { persistSession: false } }
-);
+// Create Stripe client at runtime, not build time
+function getStripe() {
+    const key = process.env.STRIPE_SECRET_KEY;
+    if (!key) throw new Error('STRIPE_SECRET_KEY is not set');
+    return new Stripe(key, { apiVersion: '2025-06-30.basil' });
+}
+// Create Supabase admin client at runtime, not build time
+function getSupabaseAdmin() {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!url || !serviceKey) throw new Error('Supabase admin envs not set');
+    return createClient(url, serviceKey, { auth: { persistSession: false } });
+}
 
 function toRow(sub, userId) {
     const firstItem = sub.items?.data?.[0] || null;
@@ -34,6 +38,9 @@ function toRow(sub, userId) {
 }
 
 export async function POST(req) {
+    const stripe = getStripe();
+    const supabaseAdmin = getSupabaseAdmin();
+
     console.log('WEBHOOK HIT', req.method, req.url);
     console.log('ENV sanity (webhook):', {
         sk: process.env.STRIPE_SECRET_KEY?.startsWith('sk_'),

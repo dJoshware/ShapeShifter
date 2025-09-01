@@ -1,0 +1,113 @@
+name: Build & Deploy (Docker Hub → EC2)
+
+on:
+  push:
+    branches: [ prod ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: prod-deploy
+  cancel-in-progress: false
+
+jobs:
+  build_push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Derive tag
+        id: meta
+        run: |
+          VERSION=$(node -p "require('./package.json').version" 2>/dev/null || echo "0.0.0")
+          echo "TAG=v${VERSION}-${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+      - name: Build & push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ vars.DOCKER_IMAGE }}:${{ steps.meta.outputs.TAG }}
+            ${{ vars.DOCKER_IMAGE }}:prod
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          # Only include build-args if your Next build needs public keys at build time
+          # build-args: |
+          #   NEXT_PUBLIC_SUPABASE_URL=${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          #   NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+
+  deploy_ec2:
+    needs: build_push
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script_stop: true
+          script: |
+            set -e
+            APP_DIR="${{ secrets.APP_DIR }}"
+            IMAGE="${{ vars.DOCKER_IMAGE }}:prod"
+
+            sudo mkdir -p "$APP_DIR"
+            cd "$APP_DIR"
+
+            if ! command -v docker >/dev/null 2>&1; then curl -fsSL https://get.docker.com | sh; fi
+            if ! docker compose version >/dev/null 2>&1; then
+              DOCKER_CONFIG=${HOME}/.docker
+              mkdir -p $DOCKER_CONFIG/cli-plugins
+              curl -SL https://github.com/docker/compose/releases/download/v2.29.2/docker-compose-linux-x86_64 -o $DOCKER_CONFIG/cli-plugins/docker-compose
+              chmod +x $DOCKER_CONFIG/cli-plugins/docker-compose
+            fi
+
+            # login only if your repo is private
+            if [ -n "${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}" ]; then
+              echo "${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin || true
+            fi
+
+            # ensure compose exists
+            if [ ! -f docker-compose.yml ]; then
+              cat > docker-compose.yml <<'YML'
+            services:
+              app:
+                image: REPLACE_IMAGE
+                container_name: shapeshifter
+                restart: unless-stopped
+                env_file:
+                  - /opt/shapeshifter/.env
+                ports:
+                  - "127.0.0.1:3000:3000"
+                healthcheck:
+                  test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+                  interval: 30s
+                  timeout: 5s
+                  retries: 5
+            YML
+            fi
+
+            sed -i "s|image: .*|image: ${IMAGE}|" docker-compose.yml
+            docker compose pull app
+            docker compose up -d --no-deps app
+
+            # smoke check through Nginx if present, else direct
+            if curl -fsS https://shapeshifter.djoshware.com -o /dev/null; then
+              echo "HTTPS OK"
+            else
+              curl -fsS http://localhost:3000/health
+            fi
