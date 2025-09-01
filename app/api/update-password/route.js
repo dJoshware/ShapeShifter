@@ -2,6 +2,14 @@ import { NextResponse } from 'next/server';
 import { createServClient } from '../../../lib/supabaseServerClient';
 import { createClient as createAdmin } from '@supabase/supabase-js';
 
+// Create Supabase admin client at runtime, not build time
+function getSupabaseAdmin() {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!url || !serviceKey) throw new Error('Supabase admin envs not set');
+    return createAdmin(url, serviceKey, { auth: { persistSession: false } });
+}
+
 export async function PUT(req) {
     try {
         // Supabase client
@@ -41,10 +49,7 @@ export async function PUT(req) {
         }
 
         // Create Supabase admin client
-        const admin = createAdmin(
-            process.env.NEXT_PUBLIC_SUPABASE_URL,
-            process.env.SUPABASE_SERVICE_ROLE_KEY,
-        );
+        const admin = getSupabaseAdmin();
         
         // Update email in auth.users
         const { data: updateData, error: updateError } = await admin.auth.admin.updateUserById(
