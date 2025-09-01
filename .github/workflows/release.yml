@@ -18,6 +18,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Derive tag
+        id: meta
+        shell: bash
+        run: |
+          VERSION=$(grep -oP '(?<="version": ")[^"]+' package.json 2>/dev/null || echo "0.0.0")
+          SHORT_SHA="${GITHUB_SHA::7}"
+          echo "TAG=v${VERSION}-${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+
       # Prebuild outside Docker for clearer errors
       - uses: actions/setup-node@v4
         with:
