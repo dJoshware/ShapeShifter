@@ -96,6 +96,7 @@ jobs:
             sudo mkdir -p "$APP_DIR"
             cd "$APP_DIR"
 
+            # Install docker + compose if missing
             if ! command -v docker >/dev/null 2>&1; then curl -fsSL https://get.docker.com | sh; fi
             if ! docker compose version >/dev/null 2>&1; then
               DOCKER_CONFIG=${HOME}/.docker
@@ -104,12 +105,16 @@ jobs:
               chmod +x $DOCKER_CONFIG/cli-plugins/docker-compose
             fi
 
-            # login only if your repo is private
+            # Ensure env is readable by SSH user
+            sudo chown $USER:$USER /opt/shapeshifter/.env
+            sudo chmod 600 /opt/shapeshifter/.env
+
+            # Login only if your repo is private
             if [ -n "${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}" ]; then
               echo "${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin || true
             fi
 
-            # ensure compose exists
+            # Ensure compose exists
             if [ ! -f docker-compose.yml ]; then
               cat > docker-compose.yml <<'YML'
             services:
@@ -133,7 +138,7 @@ jobs:
             docker compose pull app
             docker compose up -d --no-deps app
 
-            # smoke check through Nginx if present, else direct
+            # Smoke check through Nginx if present, else direct
             if curl -fsS https://shapeshifter.djoshware.com -o /dev/null; then
               echo "HTTPS OK"
             else
