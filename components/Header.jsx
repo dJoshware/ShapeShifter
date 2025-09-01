@@ -963,9 +963,15 @@ export default function Header({ difficulty, onDifficultyChange }) {
                         bgcolor: theme.palette.sand.one,
                     })}>
                     <script async src="https://js.stripe.com/v3/pricing-table.js"></script>
-                    <stripe-pricing-table
+                    {/* Dev pricing table */}
+                    {/* <stripe-pricing-table
                         pricing-table-id="prctbl_1Rq3P9CZkkV2izhom9KluEIL"
                         publishable-key="pk_test_51RihF6CZkkV2izhohRDlBQ169XLw7msXmb77bEEnoqn5ZKbL2cfHiyR590A73h0jjemyLt07IPQJ7JA8XTBUqiii00mnFz6H88">
+                    </stripe-pricing-table> */}
+                    {/* Prod pricing table */}
+                    <stripe-pricing-table
+                        pricing-table-id="prctbl_1S2YivCj7JqkviASCfp9UnI9"
+                        publishable-key="pk_live_51RihEsCj7JqkviASUIf5HFjJgL6gAM8Lw71KZDb6NExYaCZfctuEzsuHH0Spmp30PN8F2UgDpfoPyPjAzH1nsO0j00SDpsqozN">
                     </stripe-pricing-table>
                 </DialogContent>
                 <DialogActions
