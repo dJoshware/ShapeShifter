@@ -161,9 +161,8 @@ export default function LoginPage() {
                             width: '100%'
                         })}
                         textAlign='center'>
-                        <Typography
-                            component='h3'
-                            display='block'
+                        <Link
+                            href='/'
                             sx={theme => ({
                                 color: theme.palette.sand.one,
                                 fontSize:
@@ -172,9 +171,10 @@ export default function LoginPage() {
                                     theme.typography.desktop.h3.fontSize,
                                 fontWeight: 700,
                                 mb: 2,
+                                textDecoration: 'underline',
                             })}>
                             The Shape Shifter
-                        </Typography>
+                        </Link>
                         <Stack spacing={3}>
                             <FormFields
                                 autoComplete='email'
