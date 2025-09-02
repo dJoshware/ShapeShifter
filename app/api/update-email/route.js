@@ -13,7 +13,7 @@ function getSupabaseAdmin() {
 export async function PUT(req) {
     try {
         // Supabase client
-        const supabase = createServClient();
+        const supabase = await createServClient();
         // Get user from Bearer token or fall back to cookie session
         const authHeader = req.headers.get('authorization');
         let userId = null;
