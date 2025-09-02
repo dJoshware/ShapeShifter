@@ -139,8 +139,26 @@ jobs:
             docker compose up -d --no-deps app
 
             # Smoke check through Nginx if present, else direct
-            if curl -fsS https://shapeshifter.djoshware.com -o /dev/null; then
-              echo "HTTPS OK"
-            else
-              curl -fsS http://localhost:3000/health
-            fi
+            echo "Waiting for container health..."
+            for i in $(seq 1 30); do
+              STATUS=$(sudo docker inspect --format '{{.State.Health.Status}}' shapeshifter 2>/dev/null || echo "starting")
+              if [ "$STATUS" = "healthy" ]; then
+                echo "Container healthy."
+                break
+              fi
+              sleep 2
+              [ $i -eq 30 ] && { echo "Container never became healthy"; sudo docker compose logs --tail=200 app; exit 1; }
+            done
+
+            echo "Checking through Nginx (HTTPS)..."
+            for i in $(seq 1 10); do
+              if curl -fsS https://shapeshifter.djoshware.com -o /dev/null; then
+                echo "HTTPS OK"
+                exit 0
+              fi
+              sleep 3
+            done
+
+            echo "HTTPS still failing; nginx errors:"
+            sudo tail -n 100 /var/log/nginx/error.log
+            exit 1
