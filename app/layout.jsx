@@ -1,5 +1,4 @@
-import ThemeRegistry from "../components/ThemeRegistry";
-import { AuthProvider } from "../lib/contexts/AuthContext";
+import Providers from "../components/Providers";
 import Footer from "../components/Footer";
 import { Box } from "@mui/material";
 
@@ -18,20 +17,18 @@ export default function RootLayout({ children }) {
                     flexDirection: 'column',
                     minHeight: '100vh',
                 }}>
-                    <AuthProvider>
-                        <ThemeRegistry>
-                            <Box
-                                component='main'
-                                sx={{
-                                    display: 'flex',
-                                    flex: 1,
-                                    flexDirection: 'column'
-                                }}>
-                                {children}
-                            </Box>
-                            <Footer />
-                        </ThemeRegistry>
-                    </AuthProvider>
+                    <Providers>
+                        <Box
+                            component='main'
+                            sx={{
+                                display: 'flex',
+                                flex: 1,
+                                flexDirection: 'column'
+                            }}>
+                            {children}
+                        </Box>
+                        <Footer />
+                    </Providers>
                 </Box>
             </body>
         </html>
