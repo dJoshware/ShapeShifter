@@ -102,15 +102,15 @@ jobs:
             if ! docker compose version >/dev/null 2>&1; then
               DOCKER_CONFIG=${HOME}/.docker
               mkdir -p $DOCKER_CONFIG/cli-plugins
-              curl -SL https://github.com/docker/compose/releases/download/v2.29.2/docker-compose-linux-x86_64 -o $DOCKER_CONFIG/cli-plugins/docker-compose
-              chmod +x $DOCKER_CONFIG/cli-plugins/docker-compose
+              curl -SL https://github.com/docker/compose/releases/download/v2.29.2/docker-compose-linux-x86_64 -o "$DOCKER_CONFIG/cli-plugins/docker-compose"
+              chmod +x "$DOCKER_CONFIG/cli-plugins/docker-compose"
             fi
 
             # Ensure env is readable by SSH user
-            sudo chown $USER:$USER /opt/shapeshifter/.env
+            sudo chown "$USER:$USER" /opt/shapeshifter/.env
             sudo chmod 600 /opt/shapeshifter/.env
 
-            # Login only if your repo is private
+            # Login only if repo is private
             if [ -n "${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}" ]; then
               echo "${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin || true
             fi
@@ -137,13 +137,13 @@ jobs:
             fi
 
             # Make sure the image tag is current
-            sed -i "s|^\\s*image:.*$|    image: ${IMAGE}|" docker-compose.yml
+            sed -i "s|^[[:space:]]*image:.*$|    image: ${IMAGE}|" docker-compose.yml
 
             # Pull latest image & bring it up (idempotent)
             sudo docker compose -f docker-compose.yml pull app || true
             sudo docker compose -f docker-compose.yml up -d --no-deps --force-recreate app
 
-            set +e # don't die in loop
+            set +e # don't die in wait/probe loops
 
             # Smoke check through Nginx if present, else direct
             echo "Waiting for container to appear..."
@@ -153,9 +153,13 @@ jobs:
               [ -n "$CID" ] && { echo "Container: $CID"; break; }
               sleep 2
             done
-            [ -z "$CID" ] && { echo "Container didn't start"; sudo docker compose -f "$APP_DIR/docker-compose.yml" logs --tail=120 app || true; set -e; exit 1; }
+            if [ -z "$CID" ]; then
+              echo "Container didn't start"
+              sudo docker compose -f "$APP_DIR/docker-compose.yml" logs --tail=200 app || true
+              set -e; exit 1
+            fi
 
-            # Health if defined (but don't fail if it never flips)
+            # Health if defined (non-fatal)
             HAS_HEALTH=$(sudo docker inspect shapeshifter --format '{{if .State.Health}}yes{{end}}' 2>/dev/null)
             if [ "$HAS_HEALTH" = "yes" ]; then
               echo "Waiting for Docker health=healthy..."
@@ -164,10 +168,10 @@ jobs:
                 echo "  health: $STATUS"
                 [ "$STATUS" = "healthy" ] && break
                 sleep 2
-            done
+              done
               if [ "$STATUS" != "healthy" ]; then
                 echo "Health not healthy after wait; last probes:"
-                sudo docker inspect shapeshifter --format '{{rang .State.Health.Log}}{{.End}} {{.ExitCode}} {{printf "%q" .Output}}{{"\n"}}{{end}}' | tail -6 || true;
+                sudo docker inspect shapeshifter --format '{{range .State.Health.Log}}{{.End}} {{.ExitCode}} {{printf "%q" .Output}}{{"\n"}}{{end}}' | tail -6 || true;
               fi
             else
               echo "No healthcheck defined; skipping Docker health wait."
@@ -179,7 +183,11 @@ jobs:
               curl -fsS http://127.0.0.1:3000/ -o /dev/null && { echo "App responds locally."; break; };
               sleep 2
             done
-            curl -fsS http://127.0.0.1:3000/ -o /dev/null || { echo "App never responded locally"; sudo docker compose -f "$APP_DIR/docker-compose.yml" logs --tail=200 app || true; set-e; exit 1; }
+            curl -fsS http://127.0.0.1:3000/ -o /dev/null || {
+              echo "App never responded locally"
+              sudo docker compose -f "$APP_DIR/docker-compose.yml" logs --tail=200 app || true
+              set -e; exit 1
+            }
 
             # HTTPS via Nginx
             echo "Checking through Nginx (HTTPS)..."
@@ -187,6 +195,7 @@ jobs:
               curl -fsS https://shapeshifter.djoshware.com -o /dev/null && { echo "HTTPS OK"; set -e; exit 0; }
               sleep 3
             done
+            
             echo "HTTPS still failing; nginx errors:"
             sudo tail -n 120 /var/log/nginx/error.log || true
             set -e
