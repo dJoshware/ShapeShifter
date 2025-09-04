@@ -15,32 +15,33 @@ concurrency:
 jobs:
   build_push:
     runs-on: ubuntu-latest
+    outputs:
+      TAG: ${{ steps.meta.outputs.TAG }}
     steps:
       - uses: actions/checkout@v4
 
       - name: Derive tag
         id: meta
-        shell: bash
         run: |
-          VERSION=$(grep -oP '(?<="version": ")[^"]+' package.json 2>/dev/null || echo "0.0.0")
-          SHORT_SHA="${GITHUB_SHA::7}"
-          echo "TAG=v${VERSION}-${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+          VERSION=$(node -p "require('./package.json').version" 2>/dev/null || echo "0.0.0")
+          echo "TAG=v${VERSION}-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
 
       # Prebuild outside Docker for clearer errors
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
+
       - name: Install deps
         run: npm ci
+
       - name: Lint & build
-        run: |
-          npm run lint --if-present || echo "lint skipped"
-      - name: Build (needs NEXT_PUBLIC_* during prerender)
         env:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-        run: npm run build
+        run: |
+          npm run lint --if-present || echo "lint skipped"
+          npm run build
 
       - uses: docker/setup-buildx-action@v3
 
@@ -51,17 +52,8 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
-      - name: Sanity push (canary)
-        run: |
-          docker pull hello-world
-          docker tag hello-world ${{ vars.DOCKER_IMAGE }}:canary-${GITHUB_RUN_NUMBER}
-          docker push ${{ vars.DOCKER_IMAGE }}:canary-${GITHUB_RUN_NUMBER}
-
       - name: Build & push
         uses: docker/build-push-action@v5
-        env:
-          DOCKER_BUILDKIT: 1
-          BUILDKIT_PROGRESS: plain
         with:
           context: .
           platforms: linux/amd64
@@ -71,7 +63,6 @@ jobs:
             ${{ vars.DOCKER_IMAGE }}:prod
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          # Next build needs public keys at build time
           build-args: |
             NEXT_PUBLIC_SUPABASE_URL=${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
             NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
@@ -92,7 +83,7 @@ jobs:
           script: |
             set -Eeuo pipefail
             APP_DIR="${{ secrets.APP_DIR }}"
-            IMAGE="${{ vars.DOCKER_IMAGE }}:prod"
+            IMAGE="${{ vars.DOCKER_IMAGE }}:${{ needs.build_push.outputs.TAG }}"
 
             sudo mkdir -p "$APP_DIR"
             cd "$APP_DIR"
@@ -101,12 +92,12 @@ jobs:
             if ! command -v docker >/dev/null 2>&1; then curl -fsSL https://get.docker.com | sh; fi
             if ! docker compose version >/dev/null 2>&1; then
               DOCKER_CONFIG=${HOME}/.docker
-              mkdir -p $DOCKER_CONFIG/cli-plugins
+              mkdir -p "$DOCKER_CONFIG/cli-plugins"
               curl -SL https://github.com/docker/compose/releases/download/v2.29.2/docker-compose-linux-x86_64 -o "$DOCKER_CONFIG/cli-plugins/docker-compose"
               chmod +x "$DOCKER_CONFIG/cli-plugins/docker-compose"
             fi
 
-            # Ensure env is readable by SSH user
+            # Ensure env is readable
             sudo chown "$USER:$USER" /opt/shapeshifter/.env
             sudo chmod 600 /opt/shapeshifter/.env
 
@@ -115,38 +106,37 @@ jobs:
               echo "${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin || true
             fi
 
-            # Ensure compose exists
+            # Create compose on first run
             if [ ! -f docker-compose.yml ]; then
               cat > docker-compose.yml <<'YML'
-            services:
-            app:
-            image: REPLACE_IMAGE
-            container_name: shapeshifter
-            restart: unless-stopped
-            env_file:
-            - /opt/shapeshifter/.env
-            ports:
-            - "127.0.0.1:3000:3000"
-            healthcheck:
-            test: ["CMD-SHELL", "node -e \"http=require('http');http.get('http://127.0.0.1:3000/',r=>process.exit(r.statusCode<500?0:1)).on('error',()=>process.exit(1))\""]
-            interval: 30s
-            timeout: 5s
-            retries: 5
-            start_period: 10s
-            YML
+services:
+  app:
+    image: REPLACE_IMAGE
+    container_name: shapeshifter
+    restart: unless-stopped
+    env_file:
+      - /opt/shapeshifter/.env
+    ports:
+      - "127.0.0.1:3000:3000"
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"http=require('http');http.get('http://127.0.0.1:3000/',r=>process.exit(r.statusCode<500?0:1)).on('error',()=>process.exit(1))\""]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+YML
             fi
 
             # Make sure the image tag is current
             sed -i "s|^[[:space:]]*image:.*$|    image: ${IMAGE}|" docker-compose.yml
 
-            # Pull latest image & bring it up (idempotent)
+            # Pull latest image & bring it up
             sudo docker compose -f docker-compose.yml pull app || true
-            sudo docker compose -f docker-compose.yml up -d --no-deps --force-recreate app
+            sudo docker compose -f docker-compose.yml up -d --no-deps --pull always --force-recreate --remove-orphans app
 
             # Don't die in wait/probe loops
-            set +e
-            set +u
-            set +o pipefail
+            set +e; set +u; set +o pipefail
+            CID=""; STATUS=""
 
             # Smoke check through Nginx if present, else direct
             echo "Waiting for container to appear..."
