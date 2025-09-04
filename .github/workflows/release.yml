@@ -109,21 +109,21 @@ jobs:
             # Create compose on first run
             if [ ! -f docker-compose.yml ]; then
               cat > docker-compose.yml <<'YML'
-services:
-  app:
-    image: REPLACE_IMAGE
-    container_name: shapeshifter
-    restart: unless-stopped
-    env_file:
-      - /opt/shapeshifter/.env
-    ports:
-      - "127.0.0.1:3000:3000"
-    healthcheck:
-      test: ["CMD-SHELL", "node -e \"http=require('http');http.get('http://127.0.0.1:3000/',r=>process.exit(r.statusCode<500?0:1)).on('error',()=>process.exit(1))\""]
-      interval: 30s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
+                services:
+                  app:
+                  image: REPLACE_IMAGE
+                  container_name: shapeshifter
+                  restart: unless-stopped
+                  env_file:
+                    - /opt/shapeshifter/.env
+                  ports:
+                    - "127.0.0.1:3000:3000"
+                  healthcheck:
+                    test: ["CMD-SHELL", "node -e \"http=require('http');http.get('http://127.0.0.1:3000/',r=>process.exit(r.statusCode<500?0:1)).on('error',()=>process.exit(1))\""]
+                    interval: 30s
+                    timeout: 5s
+                    retries: 5
+                    start_period: 10s
               YML
             fi
 
