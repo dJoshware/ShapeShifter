@@ -143,35 +143,39 @@ jobs:
             sudo docker compose -f docker-compose.yml pull app || true
             sudo docker compose -f docker-compose.yml up -d --no-deps --force-recreate app
 
-            set +e # don't die in wait/probe loops
+            # Don't die in wait/probe loops
+            set +e
+            set +u
+            set +o pipefail
 
             # Smoke check through Nginx if present, else direct
             echo "Waiting for container to appear..."
             # Find container
             for i in $(seq 1 30); do
               CID=$(sudo docker ps -qf name=^/shapeshifter$ || true)
-              [ -n "$CID" ] && { echo "Container: $CID"; break; }
+              [ -n "${CID:-}" ] && { echo "Container: $CID"; break; }
               sleep 2
             done
-            if [ -z "$CID" ]; then
+            if [ -z "${CID:-}" ]; then
               echo "Container didn't start"
               sudo docker compose -f "$APP_DIR/docker-compose.yml" logs --tail=200 app || true
-              set -e; exit 1
+              # Restore strict flags before exiting
+              set -e; set -u; set -o pipefail; exit 1
             fi
 
             # Health if defined (non-fatal)
-            HAS_HEALTH=$(sudo docker inspect shapeshifter --format '{{if .State.Health}}yes{{end}}' 2>/dev/null)
-            if [ "$HAS_HEALTH" = "yes" ]; then
+            HAS_HEALTH=$(sudo docker inspect shapeshifter --format '{{if .State.Health}}yes{{end}}' 2>/dev/null || echo "")
+            if [ "${HAS_HEALTH:-}" = "yes" ]; then
               echo "Waiting for Docker health=healthy..."
               for i in $(seq 1 45); do
-                STATUS=$(sudo docker inspect shapeshifter --format '{{.State.Health.Status}}' 2>/dev/null || echo unknown)
-                echo "  health: $STATUS"
-                [ "$STATUS" = "healthy" ] && break
+                STATUS=$(sudo docker inspect shapeshifter --format '{{.State.Health.Status}}' 2>/dev/null || echo "unknown")
+                echo "  health: ${STATUS}"
+                [ "${STATUS:-}" = "healthy" ] && break
                 sleep 2
               done
-              if [ "$STATUS" != "healthy" ]; then
+              if [ "${STATUS:-}" != "healthy" ]; then
                 echo "Health not healthy after wait; last probes:"
-                sudo docker inspect shapeshifter --format '{{range .State.Health.Log}}{{.End}} {{.ExitCode}} {{printf "%q" .Output}}{{"\n"}}{{end}}' | tail -6 || true;
+                sudo docker inspect shapeshifter --format '{{range .State.Health.Log}}{{.End}} {{.ExitCode}} {{printf "%q" .Output}}{{"\n"}}{{end}}' | tail -6 || true
               fi
             else
               echo "No healthcheck defined; skipping Docker health wait."
@@ -180,23 +184,26 @@ jobs:
             # Local HTTP Probe (required)
             echo "Probing app on localhost:3000..."
             for i in $(seq 1 30); do
-              curl -fsS http://127.0.0.1:3000/ -o /dev/null && { echo "App responds locally."; break; };
+              curl -fsS http://127.0.0.1:3000/ -o /dev/null && { echo "App responds locally."; break; }
               sleep 2
             done
             curl -fsS http://127.0.0.1:3000/ -o /dev/null || {
               echo "App never responded locally"
               sudo docker compose -f "$APP_DIR/docker-compose.yml" logs --tail=200 app || true
-              set -e; exit 1
+              set -e; set -u; set -o pipefail; exit 1
             }
 
             # HTTPS via Nginx
             echo "Checking through Nginx (HTTPS)..."
             for i in $(seq 1 20); do
-              curl -fsS https://shapeshifter.djoshware.com -o /dev/null && { echo "HTTPS OK"; set -e; exit 0; }
+              curl -fsS https://shapeshifter.djoshware.com -o /dev/null && {
+                echo "HTTPS OK"
+                set -e; set -u; set -o pipefail; exit 0
+              }
               sleep 3
             done
 
             echo "HTTPS still failing; nginx errors:"
             sudo tail -n 120 /var/log/nginx/error.log || true
-            set -e
+            set -e; set -u; set -o pipefail
             exit 1
