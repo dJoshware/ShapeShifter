@@ -90,7 +90,7 @@ jobs:
           script_stop: true
           debug: true
           script: |
-            set -e
+            set -Eeuo pipefail
             APP_DIR="${{ secrets.APP_DIR }}"
             IMAGE="${{ vars.DOCKER_IMAGE }}:prod"
 
@@ -119,20 +119,20 @@ jobs:
             if [ ! -f docker-compose.yml ]; then
               cat > docker-compose.yml <<'YML'
             services:
-              app:
-                image: REPLACE_IMAGE
-                container_name: shapeshifter
-                restart: unless-stopped
-                env_file:
-                  - /opt/shapeshifter/.env
-                ports:
-                  - "127.0.0.1:3000:3000"
-                healthcheck:
-                  test: ["CMD-SHELL", "node -e \"http=require('http');http.get('http://127.0.0.1:3000/',r=>process.exit(r.statusCode<500?0:1)).on('error',()=>process.exit(1))\""]
-                  interval: 30s
-                  timeout: 5s
-                  retries: 5
-                  start_period: 10s
+            app:
+            image: REPLACE_IMAGE
+            container_name: shapeshifter
+            restart: unless-stopped
+            env_file:
+            - /opt/shapeshifter/.env
+            ports:
+            - "127.0.0.1:3000:3000"
+            healthcheck:
+            test: ["CMD-SHELL", "node -e \"http=require('http');http.get('http://127.0.0.1:3000/',r=>process.exit(r.statusCode<500?0:1)).on('error',()=>process.exit(1))\""]
+            interval: 30s
+            timeout: 5s
+            retries: 5
+            start_period: 10s
             YML
             fi
 
@@ -195,7 +195,7 @@ jobs:
               curl -fsS https://shapeshifter.djoshware.com -o /dev/null && { echo "HTTPS OK"; set -e; exit 0; }
               sleep 3
             done
-            
+
             echo "HTTPS still failing; nginx errors:"
             sudo tail -n 120 /var/log/nginx/error.log || true
             set -e
