@@ -109,30 +109,36 @@ jobs:
             # Create compose on first run
             if [ ! -f docker-compose.yml ]; then
               cat > docker-compose.yml <<'YML'
-                services:
-                  app:
-                  image: REPLACE_IMAGE
-                  container_name: shapeshifter
-                  restart: unless-stopped
-                  env_file:
-                    - /opt/shapeshifter/.env
-                  ports:
-                    - "127.0.0.1:3000:3000"
-                  healthcheck:
-                    test: ["CMD-SHELL", "node -e \"http=require('http');http.get('http://127.0.0.1:3000/',r=>process.exit(r.statusCode<500?0:1)).on('error',()=>process.exit(1))\""]
-                    interval: 30s
-                    timeout: 5s
-                    retries: 5
-                    start_period: 10s
-              YML
+            services:
+              app:
+              image: REPLACE_IMAGE
+              container_name: shapeshifter
+              restart: unless-stopped
+              env_file:
+                - /opt/shapeshifter/.env
+              ports:
+                - "127.0.0.1:3000:3000"
+              healthcheck:
+                test: ["CMD-SHELL", "node -e \"http=require('http');http.get('http://127.0.0.1:3000/',r=>process.exit(r.statusCode<500?0:1)).on('error',()=>process.exit(1))\""]
+                interval: 30s
+                timeout: 5s
+                retries: 5
+                start_period: 10s
+            YML
             fi
 
             # Make sure the image tag is current
             sed -i "s|^[[:space:]]*image:.*$|    image: ${IMAGE}|" docker-compose.yml
 
             # Pull latest image & bring it up
-            sudo docker compose -f docker-compose.yml pull app || true
-            sudo docker compose -f docker-compose.yml up -d --no-deps --pull always --force-recreate --remove-orphans app
+            echo "Bringing up app with compose (wait for health)..."
+            if ! sudo docker compose -f docker-compose.yml up -d \
+                --pull always \
+                --force-recreate \
+                --remove-orphans \
+                --wait --wait-timeout 120 app; then
+              echo "compose --wait timed out or failed; continuing to probes..."
+            fi
 
             # Don't die in wait/probe loops
             set +e; set +u; set +o pipefail
@@ -140,7 +146,6 @@ jobs:
 
             # Smoke check through Nginx if present, else direct
             echo "Waiting for container to appear..."
-            # Find container
             for i in $(seq 1 30); do
               CID=$(sudo docker ps -qf name=^/shapeshifter$ || true)
               [ -n "${CID:-}" ] && { echo "Container: $CID"; break; }
@@ -151,24 +156,6 @@ jobs:
               sudo docker compose -f "$APP_DIR/docker-compose.yml" logs --tail=200 app || true
               # Restore strict flags before exiting
               set -e; set -u; set -o pipefail; exit 1
-            fi
-
-            # Health if defined (non-fatal)
-            HAS_HEALTH=$(sudo docker inspect shapeshifter --format '{{if .State.Health}}yes{{end}}' 2>/dev/null || echo "")
-            if [ "${HAS_HEALTH:-}" = "yes" ]; then
-              echo "Waiting for Docker health=healthy..."
-              for i in $(seq 1 45); do
-                STATUS=$(sudo docker inspect shapeshifter --format '{{.State.Health.Status}}' 2>/dev/null || echo "unknown")
-                echo "  health: ${STATUS}"
-                [ "${STATUS:-}" = "healthy" ] && break
-                sleep 2
-              done
-              if [ "${STATUS:-}" != "healthy" ]; then
-                echo "Health not healthy after wait; last probes:"
-                sudo docker inspect shapeshifter --format '{{range .State.Health.Log}}{{.End}} {{.ExitCode}} {{printf "%q" .Output}}{{"\n"}}{{end}}' | tail -6 || true
-              fi
-            else
-              echo "No healthcheck defined; skipping Docker health wait."
             fi
 
             # Local HTTP Probe (required)
