@@ -62,7 +62,6 @@ export async function PUT(req) {
                 details: updateError.message
             }, { status: 400 });
         }
-        window.location.reload();
         return NextResponse.json({
             success: true,
             message: 'Email successfully updated',
