@@ -207,7 +207,6 @@ export default function Header({ difficulty, onDifficultyChange }) {
             setUpdateEmailAlertMessage("Your email has been updated!");
             await new Promise(resolve => setTimeout(resolve, 3000));
             setUpdateEmailAlertMessage('');
-            router.replace('/');
         } catch (err) {
             console.error('There was a problem updating the email:', err);
             setUpdateEmailLoading(false);
